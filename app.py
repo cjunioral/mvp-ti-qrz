@@ -87,12 +87,12 @@ def inserir_dados_iniciais():
     categorias_exemplo = [
         'Teclado',
         'Mouse',
-        'Impressora Fiscal',
+        'Impressora de Cupom',
         'Monitor',
         'Notebook',
         'Cabo HDMI',
         'Cabo VGA',
-        'Cabo Impressora',
+        'Cabo de Impressora',
         'Pin Pad'
     ]
 
@@ -111,19 +111,22 @@ def inserir_dados_iniciais():
     marcas_exemplo = [
         ('Logitech', mapa_categorias['Teclado']),
         ('Multilaser', mapa_categorias['Teclado']),
-        ('Redragon', mapa_categorias['Teclado']),
+        ('Genérico', mapa_categorias['Teclado']),
 
         ('Logitech', mapa_categorias['Mouse']),
         ('Multilaser', mapa_categorias['Mouse']),
         ('HP', mapa_categorias['Mouse']),
+        ('Genérico', mapa_categorias['Mouse']),
 
-        ('Bematech', mapa_categorias['Impressora Fiscal']),
-        ('Elgin', mapa_categorias['Impressora Fiscal']),
-        ('Epson', mapa_categorias['Impressora Fiscal']),
+        ('Bematech', mapa_categorias['Impressora de Cupom']),
+        ('Elgin', mapa_categorias['Impressora de Cupom']),
+        ('Epson', mapa_categorias['Impressora de Cupom']),
 
         ('LG', mapa_categorias['Monitor']),
         ('AOC', mapa_categorias['Monitor']),
         ('Samsung', mapa_categorias['Monitor']),
+        ('Acer', mapa_categorias['Monitor']),
+        ('Genérico', mapa_categorias['Monitor']),
 
         ('Dell', mapa_categorias['Notebook']),
         ('Samsung', mapa_categorias['Notebook']),
@@ -134,7 +137,7 @@ def inserir_dados_iniciais():
         
         ('Genérico', mapa_categorias['Cabo VGA']),
         
-        ('Genérico', mapa_categorias['Cabo Impressora']),
+        ('Genérico', mapa_categorias['Cabo de Impressora']),
         
         ('Genérico', mapa_categorias['Pin Pad'])
         
