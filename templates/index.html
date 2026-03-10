@@ -15,7 +15,6 @@
             --primary-dark: #b80510;
             --dark: #111111;
             --dark-2: #1f1f1f;
-            --gray-1: #f5f5f5;
             --gray-2: #e5e7eb;
             --gray-3: #6b7280;
             --white: #ffffff;
@@ -47,7 +46,7 @@
             border-radius: 28px;
             background:
                 linear-gradient(120deg, rgba(17,17,17,0.88), rgba(17,17,17,0.72));
-            min-height: 270px;
+            min-height: 240px;
             padding: 36px;
             display: flex;
             align-items: end;
@@ -55,41 +54,16 @@
             margin-bottom: 24px;
         }
 
-        .hero::before {
-            content: "";
-            position: absolute;
-            top: -40px;
-            left: -40px;
-            width: 180px;
-            height: 180px;
-            background: rgba(227, 6, 19, 0.95);
-            border-radius: 38px;
-            transform: rotate(18deg);
-        }
-
-        .hero::after {
-            content: "";
-            position: absolute;
-            right: -80px;
-            top: 30px;
-            width: 240px;
-            height: 240px;
-            border: 22px solid rgba(255,255,255,0.12);
-            border-radius: 50%;
-        }
-
         .hero-content {
             position: relative;
             z-index: 2;
+            color: white;
             max-width: 760px;
-            color: var(--white);
         }
 
         .hero-badge {
             display: inline-block;
             background: rgba(255,255,255,0.12);
-            color: #fff;
-            border: 1px solid rgba(255,255,255,0.15);
             padding: 8px 14px;
             border-radius: 999px;
             font-size: 13px;
@@ -101,15 +75,11 @@
             font-family: 'Poppins', sans-serif;
             font-size: 34px;
             font-weight: 800;
-            line-height: 1.15;
             margin-bottom: 10px;
-            letter-spacing: -0.5px;
         }
 
         .hero p {
-            font-size: 15px;
-            color: rgba(255,255,255,0.88);
-            max-width: 700px;
+            color: rgba(255,255,255,0.9);
         }
 
         .stats {
@@ -120,7 +90,7 @@
         }
 
         .stat-card {
-            background: var(--white);
+            background: white;
             border-radius: var(--radius);
             padding: 20px;
             box-shadow: var(--shadow);
@@ -129,8 +99,8 @@
 
         .stat-card span {
             display: block;
-            font-size: 13px;
             color: var(--gray-3);
+            font-size: 13px;
             margin-bottom: 8px;
             font-weight: 600;
         }
@@ -141,11 +111,50 @@
             color: var(--dark);
         }
 
-        .grid-2,
-        .grid-3 {
+        .collapsible {
+            background: var(--white);
+            border-radius: 18px;
+            box-shadow: var(--shadow);
+            margin-bottom: 18px;
+            overflow: hidden;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .collapsible summary {
+            list-style: none;
+            cursor: pointer;
+            padding: 18px 22px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #ffffff;
+        }
+
+        .collapsible summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .arrow {
+            font-size: 14px;
+            color: var(--primary);
+            transition: transform 0.2s ease;
+        }
+
+        .collapsible[open] .arrow {
+            transform: rotate(90deg);
+        }
+
+        .collapsible-content {
+            padding: 0 22px 22px 22px;
+        }
+
+        .grid-2, .grid-3 {
             display: grid;
-            gap: 22px;
-            margin-bottom: 24px;
+            gap: 20px;
         }
 
         .grid-2 {
@@ -157,37 +166,16 @@
         }
 
         .card {
-            background: var(--white);
-            border-radius: var(--radius);
-            padding: 24px;
-            box-shadow: var(--shadow);
+            background: white;
+            border-radius: 16px;
+            padding: 22px;
             border: 1px solid rgba(0,0,0,0.04);
         }
 
-        .card-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 18px;
-            gap: 10px;
-        }
-
-        .card-title {
+        .card h2 {
             font-family: 'Poppins', sans-serif;
             font-size: 20px;
-            font-weight: 700;
-            color: var(--dark);
-        }
-
-        .tag {
-            background: #fff1f2;
-            color: var(--primary);
-            border: 1px solid #fecdd3;
-            padding: 6px 12px;
-            border-radius: 999px;
-            font-size: 12px;
-            font-weight: 700;
-            white-space: nowrap;
+            margin-bottom: 16px;
         }
 
         label {
@@ -207,10 +195,8 @@
             border-radius: 12px;
             font-size: 14px;
             font-family: 'Inter', sans-serif;
-            background: #fff;
-            color: #111827;
             outline: none;
-            transition: all 0.2s ease;
+            background: #fff;
         }
 
         input:focus, select:focus {
@@ -227,32 +213,18 @@
             font-size: 14px;
             font-weight: 700;
             cursor: pointer;
-            transition: 0.2s ease;
-        }
-
-        .btn-primary {
-            background: var(--primary);
-            color: var(--white);
             width: 100%;
+            background: var(--primary);
+            color: white;
         }
 
-        .btn-primary:hover {
+        .btn:hover {
             background: var(--primary-dark);
         }
 
-        .btn-dark {
-            background: var(--dark);
-            color: var(--white);
-            width: 100%;
-        }
-
-        .btn-dark:hover {
-            background: #000;
-        }
-
         .table-card {
-            background: var(--white);
-            border-radius: var(--radius);
+            background: white;
+            border-radius: 18px;
             padding: 24px;
             box-shadow: var(--shadow);
             margin-bottom: 24px;
@@ -263,7 +235,6 @@
             font-size: 22px;
             font-weight: 700;
             margin-bottom: 18px;
-            color: var(--dark);
         }
 
         .table-wrapper {
@@ -275,7 +246,7 @@
         table {
             width: 100%;
             border-collapse: collapse;
-            background: var(--white);
+            background: white;
         }
 
         thead th {
@@ -307,6 +278,11 @@
             font-weight: 600;
         }
 
+        .money {
+            font-weight: 700;
+            color: #166534;
+        }
+
         .consulta-box {
             margin-top: 16px;
             background: linear-gradient(135deg, #fff1f2, #ffffff);
@@ -317,7 +293,6 @@
 
         .consulta-box strong {
             font-family: 'Poppins', sans-serif;
-            color: var(--dark);
             font-size: 18px;
         }
 
@@ -326,19 +301,9 @@
             padding-left: 18px;
         }
 
-        .consulta-box li {
-            margin-bottom: 6px;
-        }
-
         .small-text {
             color: #6b7280;
-            font-size: 14px;
             line-height: 1.7;
-        }
-
-        .money {
-            font-weight: 700;
-            color: #166534;
         }
 
         @media (max-width: 1200px) {
@@ -352,28 +317,18 @@
         }
 
         @media (max-width: 900px) {
-            .grid-2,
-            .grid-3 {
+            .grid-2, .grid-3 {
                 grid-template-columns: 1fr;
             }
         }
 
         @media (max-width: 700px) {
-            .hero {
-                min-height: 230px;
-                padding: 24px;
-            }
-
-            .hero h1 {
-                font-size: 26px;
-            }
-
             .stats {
                 grid-template-columns: 1fr;
             }
 
-            .container {
-                width: 94%;
+            .hero h1 {
+                font-size: 26px;
             }
         }
     </style>
@@ -403,10 +358,7 @@
             <div class="hero-content">
                 <div class="hero-badge">Grupo Queiroz • Controle Interno</div>
                 <h1>Controle de Estoque do Setor de TI</h1>
-                <p>
-                    Gestão de categorias, marcas, regionais, compras, transferências e entregas
-                    para colaboradores, com visão resumida do estoque no topo.
-                </p>
+                <p>Gestão de categorias, marcas, regionais, entradas, transferências, entregas e relatórios.</p>
             </div>
         </section>
 
@@ -429,352 +381,388 @@
             </div>
         </section>
 
-        <section class="grid-3">
-            <div class="card">
-                <div class="card-header">
-                    <h2 class="card-title">Cadastrar categoria</h2>
-                    <span class="tag">Novo item</span>
+        <details class="collapsible">
+            <summary><span class="arrow">▶</span> Cadastrar categoria</summary>
+            <div class="collapsible-content">
+                <div class="card">
+                    <form method="POST" action="/cadastrar_categoria">
+                        <label>Nome da categoria</label>
+                        <input type="text" name="nome_categoria" placeholder="Ex: Cabo de Rede" required>
+                        <button type="submit" class="btn">Cadastrar categoria</button>
+                    </form>
                 </div>
-
-                <form method="POST" action="/cadastrar_categoria">
-                    <label>Nome da categoria</label>
-                    <input type="text" name="nome_categoria" placeholder="Ex: Cabo de Rede" required>
-                    <button type="submit" class="btn btn-primary">Cadastrar categoria</button>
-                </form>
             </div>
+        </details>
 
-            <div class="card">
-                <div class="card-header">
-                    <h2 class="card-title">Cadastrar marca</h2>
-                    <span class="tag">Novo item</span>
+        <details class="collapsible">
+            <summary><span class="arrow">▶</span> Cadastrar marca</summary>
+            <div class="collapsible-content">
+                <div class="card">
+                    <form method="POST" action="/cadastrar_marca">
+                        <label>Categoria</label>
+                        <select name="categoria_id_marca" required>
+                            <option value="">Selecione a categoria</option>
+                            {% for categoria in categorias %}
+                                <option value="{{ categoria['id'] }}">{{ categoria['nome'] }}</option>
+                            {% endfor %}
+                        </select>
+
+                        <label>Nome da marca</label>
+                        <input type="text" name="nome_marca" placeholder="Ex: Intelbras" required>
+
+                        <button type="submit" class="btn">Cadastrar marca</button>
+                    </form>
                 </div>
-
-                <form method="POST" action="/cadastrar_marca">
-                    <label>Categoria</label>
-                    <select name="categoria_id_marca" required>
-                        <option value="">Selecione a categoria</option>
-                        {% for categoria in categorias %}
-                            <option value="{{ categoria['id'] }}">{{ categoria['nome'] }}</option>
-                        {% endfor %}
-                    </select>
-
-                    <label>Nome da marca</label>
-                    <input type="text" name="nome_marca" placeholder="Ex: Intelbras" required>
-
-                    <button type="submit" class="btn btn-primary">Cadastrar marca</button>
-                </form>
             </div>
+        </details>
 
-            <div class="card">
-                <div class="card-header">
-                    <h2 class="card-title">Consultar por categoria</h2>
-                    <span class="tag">Consulta</span>
+        <details class="collapsible" open>
+            <summary><span class="arrow">▶</span> Cadastrar produto / entrada de estoque</summary>
+            <div class="collapsible-content">
+                <div class="card">
+                    <form method="POST" action="/adicionar_estoque">
+                        <label>Categoria</label>
+                        <select name="categoria_id" id="categoria_add" onchange="carregarMarcas('categoria_add', 'marca_add')" required>
+                            <option value="">Selecione a categoria</option>
+                            {% for categoria in categorias %}
+                                <option value="{{ categoria['id'] }}">{{ categoria['nome'] }}</option>
+                            {% endfor %}
+                        </select>
+
+                        <label>Marca</label>
+                        <select name="marca_id" id="marca_add" required>
+                            <option value="">Selecione a marca</option>
+                        </select>
+
+                        <label>Regional</label>
+                        <select name="regional" required>
+                            <option value="">Selecione a regional</option>
+                            {% for regional in regionais %}
+                                <option value="{{ regional }}">{{ regional }}</option>
+                            {% endfor %}
+                        </select>
+
+                        <label>Quantidade</label>
+                        <input type="number" name="quantidade" min="1" required>
+
+                        <label>Valor total da compra</label>
+                        <input type="number" step="0.01" name="valor_total_compra" placeholder="Ex: 1500.00" required>
+
+                        <label>Observação</label>
+                        <input type="text" name="observacao" placeholder="Ex: compra de março / Miranda">
+
+                        <button type="submit" class="btn">Adicionar estoque</button>
+                    </form>
                 </div>
+            </div>
+        </details>
 
-                <form method="GET">
-                    <label>Categoria</label>
-                    <select name="categoria_consulta" required>
-                        <option value="">Selecione a categoria</option>
-                        {% for categoria in categorias %}
-                            <option value="{{ categoria['id'] }}" {% if categoria_consulta == categoria['id']|string %}selected{% endif %}>
-                                {{ categoria['nome'] }}
-                            </option>
-                        {% endfor %}
-                    </select>
+        <details class="collapsible">
+            <summary><span class="arrow">▶</span> Transferir entre regionais</summary>
+            <div class="collapsible-content">
+                <div class="card">
+                    <form method="POST" action="/transferir">
+                        <label>Categoria</label>
+                        <select name="categoria_id" id="categoria_transf" onchange="carregarMarcas('categoria_transf', 'marca_transf')" required>
+                            <option value="">Selecione a categoria</option>
+                            {% for categoria in categorias %}
+                                <option value="{{ categoria['id'] }}">{{ categoria['nome'] }}</option>
+                            {% endfor %}
+                        </select>
 
-                    <button type="submit" class="btn btn-dark">Consultar</button>
-                </form>
+                        <label>Marca</label>
+                        <select name="marca_id" id="marca_transf" required>
+                            <option value="">Selecione a marca</option>
+                        </select>
 
-                {% if resultado_consulta is not none %}
-                    <div class="consulta-box">
-                        <strong>Total em estoque: {{ resultado_consulta }}</strong>
+                        <label>Origem</label>
+                        <select name="origem" required>
+                            <option value="">Selecione a origem</option>
+                            {% for regional in regionais %}
+                                <option value="{{ regional }}">{{ regional }}</option>
+                            {% endfor %}
+                        </select>
 
-                        {% if resultado_por_regional %}
+                        <label>Destino</label>
+                        <select name="destino" required>
+                            <option value="">Selecione o destino</option>
+                            {% for regional in regionais %}
+                                <option value="{{ regional }}">{{ regional }}</option>
+                            {% endfor %}
+                        </select>
+
+                        <label>Quantidade</label>
+                        <input type="number" name="quantidade" min="1" required>
+
+                        <button type="submit" class="btn">Transferir estoque</button>
+                    </form>
+                </div>
+            </div>
+        </details>
+
+        <details class="collapsible">
+            <summary><span class="arrow">▶</span> Entregar item</summary>
+            <div class="collapsible-content">
+                <div class="card">
+                    <form method="POST" action="/entregar">
+                        <label>Categoria</label>
+                        <select name="categoria_id" id="categoria_entrega" onchange="carregarMarcas('categoria_entrega', 'marca_entrega')" required>
+                            <option value="">Selecione a categoria</option>
+                            {% for categoria in categorias %}
+                                <option value="{{ categoria['id'] }}">{{ categoria['nome'] }}</option>
+                            {% endfor %}
+                        </select>
+
+                        <label>Marca</label>
+                        <select name="marca_id" id="marca_entrega" required>
+                            <option value="">Selecione a marca</option>
+                        </select>
+
+                        <label>Regional</label>
+                        <select name="regional" required>
+                            <option value="">Selecione a regional</option>
+                            {% for regional in regionais %}
+                                <option value="{{ regional }}">{{ regional }}</option>
+                            {% endfor %}
+                        </select>
+
+                        <label>Quantidade</label>
+                        <input type="number" name="quantidade" min="1" required>
+
+                        <label>Responsável</label>
+                        <input type="text" name="responsavel" placeholder="Nome da pessoa" required>
+
+                        <label>Setor</label>
+                        <input type="text" name="setor" placeholder="Ex: Financeiro, Central de Notas, Pricing..." required>
+
+                        <button type="submit" class="btn">Registrar entrega</button>
+                    </form>
+                </div>
+            </div>
+        </details>
+
+        <details class="collapsible">
+            <summary><span class="arrow">▶</span> Ver estoque</summary>
+            <div class="collapsible-content">
+                <div class="table-card" style="box-shadow:none; padding:0; margin:0;">
+                    <div class="table-wrapper">
+                        {% if estoque %}
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Categoria</th>
+                                    <th>Marca</th>
+                                    <th>Regional</th>
+                                    <th>Quantidade</th>
+                                    <th>Valor Total em Estoque</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in estoque %}
+                                <tr>
+                                    <td>{{ item['categoria'] }}</td>
+                                    <td>{{ item['marca'] }}</td>
+                                    <td>{{ item['regional'] }}</td>
+                                    <td>{{ item['quantidade'] }}</td>
+                                    <td class="money">R$ {{ '%.2f'|format(item['valor_total'] or 0) }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        {% else %}
+                        <div class="empty">Nenhum item cadastrado no estoque.</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </details>
+
+        <details class="collapsible">
+            <summary><span class="arrow">▶</span> Entradas de estoque</summary>
+            <div class="collapsible-content">
+                <div class="table-card" style="box-shadow:none; padding:0; margin:0;">
+                    <div class="table-wrapper">
+                        {% if entradas_estoque %}
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Categoria</th>
+                                    <th>Marca</th>
+                                    <th>Regional</th>
+                                    <th>Quantidade</th>
+                                    <th>Valor Unitário</th>
+                                    <th>Valor Total</th>
+                                    <th>Observação</th>
+                                    <th>Data</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for entrada in entradas_estoque %}
+                                <tr>
+                                    <td>{{ entrada['id'] }}</td>
+                                    <td>{{ entrada['categoria'] }}</td>
+                                    <td>{{ entrada['marca'] }}</td>
+                                    <td>{{ entrada['regional'] }}</td>
+                                    <td>{{ entrada['quantidade'] }}</td>
+                                    <td class="money">R$ {{ '%.2f'|format(entrada['valor_unitario'] or 0) }}</td>
+                                    <td class="money">R$ {{ '%.2f'|format(entrada['valor_total'] or 0) }}</td>
+                                    <td>{{ entrada['observacao'] or '-' }}</td>
+                                    <td>{{ entrada['data_entrada'] }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        {% else %}
+                        <div class="empty">Nenhuma entrada de estoque registrada ainda.</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </details>
+
+        <details class="collapsible">
+            <summary><span class="arrow">▶</span> Relatórios</summary>
+            <div class="collapsible-content">
+
+                <div class="grid-2">
+                    <div class="card">
+                        <h2>Consultar por categoria</h2>
+
+                        <form method="GET">
+                            <label>Categoria</label>
+                            <select name="categoria_consulta" required>
+                                <option value="">Selecione a categoria</option>
+                                {% for categoria in categorias %}
+                                    <option value="{{ categoria['id'] }}" {% if categoria_consulta == categoria['id']|string %}selected{% endif %}>
+                                        {{ categoria['nome'] }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+
+                            <button type="submit" class="btn">Consultar</button>
+                        </form>
+
+                        {% if resultado_consulta is not none %}
+                        <div class="consulta-box">
+                            <strong>Total em estoque: {{ resultado_consulta }}</strong>
+                            {% if resultado_por_regional %}
                             <ul>
                                 {% for item in resultado_por_regional %}
                                     <li>{{ item['regional'] }}: {{ item['total'] }}</li>
                                 {% endfor %}
                             </ul>
+                            {% endif %}
+                        </div>
                         {% endif %}
                     </div>
-                {% endif %}
-            </div>
-        </section>
 
-        <section class="grid-2">
-            <div class="card">
-                <div class="card-header">
-                    <h2 class="card-title">Adicionar ao estoque</h2>
-                    <span class="tag">Entrada</span>
+                    <div class="card">
+                        <h2>Resumo rápido</h2>
+                        <p class="small-text">
+                            Esta área mostra os relatórios principais do estoque, incluindo resumo por categoria, movimentações entre regionais e entregas para colaboradores.
+                        </p>
+                    </div>
                 </div>
 
-                <form method="POST" action="/adicionar_estoque">
-                    <label>Categoria</label>
-                    <select name="categoria_id" id="categoria_add" onchange="carregarMarcas('categoria_add', 'marca_add')" required>
-                        <option value="">Selecione a categoria</option>
-                        {% for categoria in categorias %}
-                            <option value="{{ categoria['id'] }}">{{ categoria['nome'] }}</option>
-                        {% endfor %}
-                    </select>
-
-                    <label>Marca</label>
-                    <select name="marca_id" id="marca_add" required>
-                        <option value="">Selecione a marca</option>
-                    </select>
-
-                    <label>Regional</label>
-                    <select name="regional" required>
-                        <option value="">Selecione a regional</option>
-                        {% for regional in regionais %}
-                            <option value="{{ regional }}">{{ regional }}</option>
-                        {% endfor %}
-                    </select>
-
-                    <label>Quantidade</label>
-                    <input type="number" name="quantidade" min="1" required>
-
-                    <label>Valor total da compra</label>
-                    <input type="number" step="0.01" name="valor_total_compra" placeholder="Ex: 100.00" required>
-
-                    <button type="submit" class="btn btn-primary">Adicionar estoque</button>
-                </form>
-            </div>
-
-            <div class="card">
-                <div class="card-header">
-                    <h2 class="card-title">Transferir entre regionais</h2>
-                    <span class="tag">Movimentação</span>
+                <div class="table-card">
+                    <h2 class="table-title">Resumo por categoria</h2>
+                    <div class="table-wrapper">
+                        {% if resumo_categorias %}
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Categoria</th>
+                                    <th>Total em estoque</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in resumo_categorias %}
+                                <tr>
+                                    <td>{{ item['categoria'] }}</td>
+                                    <td>{{ item['total'] }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        {% else %}
+                        <div class="empty">Nenhuma categoria encontrada.</div>
+                        {% endif %}
+                    </div>
                 </div>
 
-                <form method="POST" action="/transferir">
-                    <label>Categoria</label>
-                    <select name="categoria_id" id="categoria_transf" onchange="carregarMarcas('categoria_transf', 'marca_transf')" required>
-                        <option value="">Selecione a categoria</option>
-                        {% for categoria in categorias %}
-                            <option value="{{ categoria['id'] }}">{{ categoria['nome'] }}</option>
-                        {% endfor %}
-                    </select>
-
-                    <label>Marca</label>
-                    <select name="marca_id" id="marca_transf" required>
-                        <option value="">Selecione a marca</option>
-                    </select>
-
-                    <label>Origem</label>
-                    <select name="origem" required>
-                        <option value="">Selecione a origem</option>
-                        {% for regional in regionais %}
-                            <option value="{{ regional }}">{{ regional }}</option>
-                        {% endfor %}
-                    </select>
-
-                    <label>Destino</label>
-                    <select name="destino" required>
-                        <option value="">Selecione o destino</option>
-                        {% for regional in regionais %}
-                            <option value="{{ regional }}">{{ regional }}</option>
-                        {% endfor %}
-                    </select>
-
-                    <label>Quantidade</label>
-                    <input type="number" name="quantidade" min="1" required>
-
-                    <button type="submit" class="btn btn-primary">Transferir estoque</button>
-                </form>
-            </div>
-        </section>
-
-        <section class="grid-2">
-            <div class="card">
-                <div class="card-header">
-                    <h2 class="card-title">Entregar item</h2>
-                    <span class="tag">Baixa</span>
+                <div class="table-card">
+                    <h2 class="table-title">Últimas movimentações entre regionais</h2>
+                    <div class="table-wrapper">
+                        {% if movimentacoes %}
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Categoria</th>
+                                    <th>Marca</th>
+                                    <th>Origem</th>
+                                    <th>Destino</th>
+                                    <th>Quantidade</th>
+                                    <th>Data</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for mov in movimentacoes %}
+                                <tr>
+                                    <td>{{ mov['categoria'] }}</td>
+                                    <td>{{ mov['marca'] }}</td>
+                                    <td>{{ mov['origem'] }}</td>
+                                    <td>{{ mov['destino'] }}</td>
+                                    <td>{{ mov['quantidade'] }}</td>
+                                    <td>{{ mov['data_movimentacao'] }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        {% else %}
+                        <div class="empty">Nenhuma movimentação registrada ainda.</div>
+                        {% endif %}
+                    </div>
                 </div>
 
-                <form method="POST" action="/entregar">
-                    <label>Categoria</label>
-                    <select name="categoria_id" id="categoria_entrega" onchange="carregarMarcas('categoria_entrega', 'marca_entrega')" required>
-                        <option value="">Selecione a categoria</option>
-                        {% for categoria in categorias %}
-                            <option value="{{ categoria['id'] }}">{{ categoria['nome'] }}</option>
-                        {% endfor %}
-                    </select>
-
-                    <label>Marca</label>
-                    <select name="marca_id" id="marca_entrega" required>
-                        <option value="">Selecione a marca</option>
-                    </select>
-
-                    <label>Regional</label>
-                    <select name="regional" required>
-                        <option value="">Selecione a regional</option>
-                        {% for regional in regionais %}
-                            <option value="{{ regional }}">{{ regional }}</option>
-                        {% endfor %}
-                    </select>
-
-                    <label>Quantidade</label>
-                    <input type="number" name="quantidade" min="1" required>
-
-                    <label>Responsável</label>
-                    <input type="text" name="responsavel" placeholder="Nome da pessoa" required>
-
-                    <label>Setor</label>
-                    <input type="text" name="setor" placeholder="Ex: Financeiro" required>
-
-                    <button type="submit" class="btn btn-primary">Registrar entrega</button>
-                </form>
-            </div>
-
-            <div class="card">
-                <div class="card-header">
-                    <h2 class="card-title">Resumo rápido</h2>
-                    <span class="tag">BI</span>
+                <div class="table-card">
+                    <h2 class="table-title">Últimas entregas para pessoas</h2>
+                    <div class="table-wrapper">
+                        {% if entregas %}
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Categoria</th>
+                                    <th>Marca</th>
+                                    <th>Regional</th>
+                                    <th>Quantidade</th>
+                                    <th>Responsável</th>
+                                    <th>Setor</th>
+                                    <th>Data</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for ent in entregas %}
+                                <tr>
+                                    <td>{{ ent['categoria'] }}</td>
+                                    <td>{{ ent['marca'] }}</td>
+                                    <td>{{ ent['regional'] }}</td>
+                                    <td>{{ ent['quantidade'] }}</td>
+                                    <td>{{ ent['responsavel'] }}</td>
+                                    <td>{{ ent['setor'] }}</td>
+                                    <td>{{ ent['data_entrega'] }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        {% else %}
+                        <div class="empty">Nenhuma entrega registrada ainda.</div>
+                        {% endif %}
+                    </div>
                 </div>
 
-                <p class="small-text">
-                    Use essa tela para cadastrar novos tipos de itens sem alterar o código,
-                    controlar valores das compras, transferir materiais entre regionais e registrar
-                    entregas para colaboradores.
-                </p>
-
-                <br>
-
-                <p class="small-text">
-                    O valor do estoque é recalculado com base nas entradas, transferências e baixas.
-                </p>
             </div>
-        </section>
-
-        <section class="table-card">
-            <h2 class="table-title">Resumo por categoria</h2>
-            <div class="table-wrapper">
-                {% if resumo_categorias %}
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Categoria</th>
-                            <th>Total em estoque</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for item in resumo_categorias %}
-                        <tr>
-                            <td>{{ item['categoria'] }}</td>
-                            <td>{{ item['total'] }}</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-                {% else %}
-                    <div class="empty">Nenhuma categoria encontrada.</div>
-                {% endif %}
-            </div>
-        </section>
-
-        <section class="table-card">
-            <h2 class="table-title">Estoque atual</h2>
-            <div class="table-wrapper">
-                {% if estoque %}
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Categoria</th>
-                            <th>Marca</th>
-                            <th>Regional</th>
-                            <th>Quantidade</th>
-                            <th>Valor Unitário</th>
-                            <th>Valor Total</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for item in estoque %}
-                        <tr>
-                            <td>{{ item['categoria'] }}</td>
-                            <td>{{ item['marca'] }}</td>
-                            <td>{{ item['regional'] }}</td>
-                            <td>{{ item['quantidade'] }}</td>
-                            <td class="money">R$ {{ '%.2f'|format(item['valor_unitario'] or 0) }}</td>
-                            <td class="money">R$ {{ '%.2f'|format(item['valor_total'] or 0) }}</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-                {% else %}
-                    <div class="empty">Nenhum item cadastrado no estoque.</div>
-                {% endif %}
-            </div>
-        </section>
-
-        <section class="table-card">
-            <h2 class="table-title">Últimas movimentações entre regionais</h2>
-            <div class="table-wrapper">
-                {% if movimentacoes %}
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Categoria</th>
-                            <th>Marca</th>
-                            <th>Origem</th>
-                            <th>Destino</th>
-                            <th>Quantidade</th>
-                            <th>Data</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for mov in movimentacoes %}
-                        <tr>
-                            <td>{{ mov['categoria'] }}</td>
-                            <td>{{ mov['marca'] }}</td>
-                            <td>{{ mov['origem'] }}</td>
-                            <td>{{ mov['destino'] }}</td>
-                            <td>{{ mov['quantidade'] }}</td>
-                            <td>{{ mov['data_movimentacao'] }}</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-                {% else %}
-                    <div class="empty">Nenhuma movimentação registrada ainda.</div>
-                {% endif %}
-            </div>
-        </section>
-
-        <section class="table-card">
-            <h2 class="table-title">Últimas entregas para pessoas</h2>
-            <div class="table-wrapper">
-                {% if entregas %}
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Categoria</th>
-                            <th>Marca</th>
-                            <th>Regional</th>
-                            <th>Quantidade</th>
-                            <th>Responsável</th>
-                            <th>Setor</th>
-                            <th>Data</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for ent in entregas %}
-                        <tr>
-                            <td>{{ ent['categoria'] }}</td>
-                            <td>{{ ent['marca'] }}</td>
-                            <td>{{ ent['regional'] }}</td>
-                            <td>{{ ent['quantidade'] }}</td>
-                            <td>{{ ent['responsavel'] }}</td>
-                            <td>{{ ent['setor'] }}</td>
-                            <td>{{ ent['data_entrega'] }}</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-                {% else %}
-                    <div class="empty">Nenhuma entrega registrada ainda.</div>
-                {% endif %}
-            </div>
-        </section>
+        </details>
 
     </div>
 </body>
