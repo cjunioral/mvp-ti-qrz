@@ -13,6 +13,15 @@ def conectar():
     return conn
 
 
+def coluna_existe(nome_tabela, nome_coluna):
+    conn = conectar()
+    cursor = conn.cursor()
+    cursor.execute(f"PRAGMA table_info({nome_tabela})")
+    colunas = cursor.fetchall()
+    conn.close()
+    return any(coluna["name"] == nome_coluna for coluna in colunas)
+
+
 def criar_tabelas():
     conn = conectar()
     cursor = conn.cursor()
@@ -41,6 +50,8 @@ def criar_tabelas():
             marca_id INTEGER NOT NULL,
             regional TEXT NOT NULL,
             quantidade INTEGER NOT NULL DEFAULT 0,
+            valor_unitario REAL DEFAULT 0,
+            valor_total REAL DEFAULT 0,
             UNIQUE(categoria_id, marca_id, regional),
             FOREIGN KEY (categoria_id) REFERENCES categorias(id),
             FOREIGN KEY (marca_id) REFERENCES marcas(id)
@@ -75,6 +86,20 @@ def criar_tabelas():
             FOREIGN KEY (marca_id) REFERENCES marcas(id)
         )
     ''')
+
+    conn.commit()
+    conn.close()
+
+
+def atualizar_schema():
+    conn = conectar()
+    cursor = conn.cursor()
+
+    if not coluna_existe("estoque", "valor_unitario"):
+        cursor.execute("ALTER TABLE estoque ADD COLUMN valor_unitario REAL DEFAULT 0")
+
+    if not coluna_existe("estoque", "valor_total"):
+        cursor.execute("ALTER TABLE estoque ADD COLUMN valor_total REAL DEFAULT 0")
 
     conn.commit()
     conn.close()
@@ -134,13 +159,9 @@ def inserir_dados_iniciais():
         ('Acer', mapa_categorias['Notebook']),
 
         ('Genérico', mapa_categorias['Cabo HDMI']),
-        
         ('Genérico', mapa_categorias['Cabo VGA']),
-        
         ('Genérico', mapa_categorias['Cabo de Impressora']),
-        
         ('Genérico', mapa_categorias['Pin Pad'])
-        
     ]
 
     for nome_marca, categoria_id in marcas_exemplo:
@@ -154,6 +175,7 @@ def inserir_dados_iniciais():
 
 
 criar_tabelas()
+atualizar_schema()
 inserir_dados_iniciais()
 
 
@@ -171,7 +193,9 @@ def index():
             c.nome AS categoria,
             m.nome AS marca,
             e.regional,
-            e.quantidade
+            e.quantidade,
+            e.valor_unitario,
+            e.valor_total
         FROM estoque e
         JOIN categorias c ON e.categoria_id = c.id
         JOIN marcas m ON e.marca_id = m.id
@@ -222,20 +246,37 @@ def index():
         cursor.execute('''
             SELECT COALESCE(SUM(e.quantidade), 0) AS total
             FROM estoque e
-            JOIN categorias c ON e.categoria_id = c.id
-            WHERE c.id = ?
+            WHERE e.categoria_id = ?
         ''', (categoria_consulta,))
         resultado_consulta = cursor.fetchone()['total']
 
         cursor.execute('''
             SELECT e.regional, SUM(e.quantidade) AS total
             FROM estoque e
-            JOIN categorias c ON e.categoria_id = c.id
-            WHERE c.id = ?
+            WHERE e.categoria_id = ?
             GROUP BY e.regional
             ORDER BY e.regional
         ''', (categoria_consulta,))
         resultado_por_regional = cursor.fetchall()
+
+    # KPIs / BI
+    cursor.execute('SELECT COUNT(*) AS total_registros FROM estoque')
+    total_registros = cursor.fetchone()['total_registros']
+
+    cursor.execute('SELECT COALESCE(SUM(quantidade), 0) AS total_unidades FROM estoque')
+    total_unidades = cursor.fetchone()['total_unidades']
+
+    cursor.execute('SELECT COALESCE(SUM(valor_total), 0) AS valor_estoque FROM estoque')
+    valor_estoque = cursor.fetchone()['valor_estoque']
+
+    cursor.execute('''
+        SELECT c.nome AS categoria, COALESCE(SUM(e.quantidade), 0) AS total
+        FROM categorias c
+        LEFT JOIN estoque e ON e.categoria_id = c.id
+        GROUP BY c.id, c.nome
+        ORDER BY total DESC, c.nome
+    ''')
+    resumo_categorias = cursor.fetchall()
 
     conn.close()
 
@@ -248,7 +289,11 @@ def index():
         regionais=REGIONAIS,
         categoria_consulta=categoria_consulta,
         resultado_consulta=resultado_consulta,
-        resultado_por_regional=resultado_por_regional
+        resultado_por_regional=resultado_por_regional,
+        total_registros=total_registros,
+        total_unidades=total_unidades,
+        valor_estoque=valor_estoque,
+        resumo_categorias=resumo_categorias
     )
 
 
@@ -267,11 +312,47 @@ def listar_marcas(categoria_id):
 
     conn.close()
 
-    options = '<option value=''>Selecione a marca</option>'
+    options = "<option value=''>Selecione a marca</option>"
     for marca in marcas:
         options += f"<option value='{marca['id']}'>{marca['nome']}</option>"
 
     return options
+
+
+@app.route('/cadastrar_categoria', methods=['POST'])
+def cadastrar_categoria():
+    nome = request.form.get('nome_categoria', '').strip()
+
+    if not nome:
+        return redirect(url_for('index'))
+
+    conn = conectar()
+    cursor = conn.cursor()
+    cursor.execute('INSERT OR IGNORE INTO categorias (nome) VALUES (?)', (nome,))
+    conn.commit()
+    conn.close()
+
+    return redirect(url_for('index'))
+
+
+@app.route('/cadastrar_marca', methods=['POST'])
+def cadastrar_marca():
+    nome = request.form.get('nome_marca', '').strip()
+    categoria_id = request.form.get('categoria_id_marca')
+
+    if not nome or not categoria_id:
+        return redirect(url_for('index'))
+
+    conn = conectar()
+    cursor = conn.cursor()
+    cursor.execute('''
+        INSERT OR IGNORE INTO marcas (nome, categoria_id)
+        VALUES (?, ?)
+    ''', (nome, categoria_id))
+    conn.commit()
+    conn.close()
+
+    return redirect(url_for('index'))
 
 
 @app.route('/adicionar_estoque', methods=['POST'])
@@ -280,23 +361,27 @@ def adicionar_estoque():
     marca_id = request.form.get('marca_id')
     regional = request.form.get('regional')
     quantidade = request.form.get('quantidade')
+    valor_total_compra = request.form.get('valor_total_compra')
 
-    if not all([categoria_id, marca_id, regional, quantidade]):
+    if not all([categoria_id, marca_id, regional, quantidade, valor_total_compra]):
         return redirect(url_for('index'))
 
     try:
         quantidade = int(quantidade)
+        valor_total_compra = float(valor_total_compra)
     except ValueError:
         return redirect(url_for('index'))
 
-    if quantidade <= 0:
+    if quantidade <= 0 or valor_total_compra < 0:
         return redirect(url_for('index'))
+
+    valor_unitario = valor_total_compra / quantidade if quantidade > 0 else 0
 
     conn = conectar()
     cursor = conn.cursor()
 
     cursor.execute('''
-        SELECT id, quantidade
+        SELECT id, quantidade, valor_total
         FROM estoque
         WHERE categoria_id = ? AND marca_id = ? AND regional = ?
     ''', (categoria_id, marca_id, regional))
@@ -305,16 +390,21 @@ def adicionar_estoque():
 
     if item:
         nova_quantidade = item['quantidade'] + quantidade
+        novo_valor_total = (item['valor_total'] or 0) + valor_total_compra
+        novo_valor_unitario = novo_valor_total / nova_quantidade if nova_quantidade > 0 else 0
+
         cursor.execute('''
             UPDATE estoque
-            SET quantidade = ?
+            SET quantidade = ?, valor_unitario = ?, valor_total = ?
             WHERE id = ?
-        ''', (nova_quantidade, item['id']))
+        ''', (nova_quantidade, novo_valor_unitario, novo_valor_total, item['id']))
     else:
         cursor.execute('''
-            INSERT INTO estoque (categoria_id, marca_id, regional, quantidade)
-            VALUES (?, ?, ?, ?)
-        ''', (categoria_id, marca_id, regional, quantidade))
+            INSERT INTO estoque (
+                categoria_id, marca_id, regional, quantidade, valor_unitario, valor_total
+            )
+            VALUES (?, ?, ?, ?, ?, ?)
+        ''', (categoria_id, marca_id, regional, quantidade, valor_unitario, valor_total_compra))
 
     conn.commit()
     conn.close()
@@ -348,7 +438,7 @@ def transferir():
     cursor = conn.cursor()
 
     cursor.execute('''
-        SELECT id, quantidade
+        SELECT id, quantidade, valor_unitario, valor_total
         FROM estoque
         WHERE categoria_id = ? AND marca_id = ? AND regional = ?
     ''', (categoria_id, marca_id, origem))
@@ -359,33 +449,42 @@ def transferir():
         conn.close()
         return redirect(url_for('index'))
 
+    valor_unitario_origem = estoque_origem['valor_unitario'] or 0
     nova_qtd_origem = estoque_origem['quantidade'] - quantidade
-    cursor.execute('''
-        UPDATE estoque
-        SET quantidade = ?
-        WHERE id = ?
-    ''', (nova_qtd_origem, estoque_origem['id']))
+    novo_valor_total_origem = nova_qtd_origem * valor_unitario_origem
 
     cursor.execute('''
-        SELECT id, quantidade
+        UPDATE estoque
+        SET quantidade = ?, valor_total = ?
+        WHERE id = ?
+    ''', (nova_qtd_origem, novo_valor_total_origem, estoque_origem['id']))
+
+    cursor.execute('''
+        SELECT id, quantidade, valor_unitario, valor_total
         FROM estoque
         WHERE categoria_id = ? AND marca_id = ? AND regional = ?
     ''', (categoria_id, marca_id, destino))
 
     estoque_destino = cursor.fetchone()
+    valor_transferido = quantidade * valor_unitario_origem
 
     if estoque_destino:
         nova_qtd_destino = estoque_destino['quantidade'] + quantidade
+        novo_valor_total_destino = (estoque_destino['valor_total'] or 0) + valor_transferido
+        novo_valor_unitario_destino = novo_valor_total_destino / nova_qtd_destino if nova_qtd_destino > 0 else 0
+
         cursor.execute('''
             UPDATE estoque
-            SET quantidade = ?
+            SET quantidade = ?, valor_unitario = ?, valor_total = ?
             WHERE id = ?
-        ''', (nova_qtd_destino, estoque_destino['id']))
+        ''', (nova_qtd_destino, novo_valor_unitario_destino, novo_valor_total_destino, estoque_destino['id']))
     else:
         cursor.execute('''
-            INSERT INTO estoque (categoria_id, marca_id, regional, quantidade)
-            VALUES (?, ?, ?, ?)
-        ''', (categoria_id, marca_id, destino, quantidade))
+            INSERT INTO estoque (
+                categoria_id, marca_id, regional, quantidade, valor_unitario, valor_total
+            )
+            VALUES (?, ?, ?, ?, ?, ?)
+        ''', (categoria_id, marca_id, destino, quantidade, valor_unitario_origem, valor_transferido))
 
     cursor.execute('''
         INSERT INTO movimentacoes (categoria_id, marca_id, origem, destino, quantidade)
@@ -422,7 +521,7 @@ def entregar():
     cursor = conn.cursor()
 
     cursor.execute('''
-        SELECT id, quantidade
+        SELECT id, quantidade, valor_unitario
         FROM estoque
         WHERE categoria_id = ? AND marca_id = ? AND regional = ?
     ''', (categoria_id, marca_id, regional))
@@ -434,12 +533,13 @@ def entregar():
         return redirect(url_for('index'))
 
     nova_quantidade = item['quantidade'] - quantidade
+    novo_valor_total = nova_quantidade * (item['valor_unitario'] or 0)
 
     cursor.execute('''
         UPDATE estoque
-        SET quantidade = ?
+        SET quantidade = ?, valor_total = ?
         WHERE id = ?
-    ''', (nova_quantidade, item['id']))
+    ''', (nova_quantidade, novo_valor_total, item['id']))
 
     cursor.execute('''
         INSERT INTO entregas (

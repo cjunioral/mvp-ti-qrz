@@ -37,7 +37,7 @@
 
         .container {
             width: 92%;
-            max-width: 1320px;
+            max-width: 1400px;
             margin: 28px auto 40px;
         }
 
@@ -47,11 +47,12 @@
             border-radius: 28px;
             background:
                 linear-gradient(120deg, rgba(17,17,17,0.88), rgba(17,17,17,0.72));
-            min-height: 280px;
+            min-height: 270px;
             padding: 36px;
             display: flex;
             align-items: end;
             box-shadow: var(--shadow);
+            margin-bottom: 24px;
         }
 
         .hero::before {
@@ -108,14 +109,13 @@
         .hero p {
             font-size: 15px;
             color: rgba(255,255,255,0.88);
-            max-width: 620px;
+            max-width: 700px;
         }
 
         .stats {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             gap: 18px;
-            margin-top: 22px;
             margin-bottom: 24px;
         }
 
@@ -137,22 +137,23 @@
 
         .stat-card strong {
             font-family: 'Poppins', sans-serif;
-            font-size: 28px;
+            font-size: 26px;
             color: var(--dark);
         }
 
-        .grid {
+        .grid-2,
+        .grid-3 {
             display: grid;
-            grid-template-columns: 1fr 1fr;
             gap: 22px;
             margin-bottom: 24px;
         }
 
+        .grid-2 {
+            grid-template-columns: 1fr 1fr;
+        }
+
         .grid-3 {
-            display: grid;
             grid-template-columns: 1fr 1fr 1fr;
-            gap: 22px;
-            margin-bottom: 24px;
         }
 
         .card {
@@ -168,11 +169,12 @@
             align-items: center;
             justify-content: space-between;
             margin-bottom: 18px;
+            gap: 10px;
         }
 
         .card-title {
             font-family: 'Poppins', sans-serif;
-            font-size: 22px;
+            font-size: 20px;
             font-weight: 700;
             color: var(--dark);
         }
@@ -185,6 +187,7 @@
             border-radius: 999px;
             font-size: 12px;
             font-weight: 700;
+            white-space: nowrap;
         }
 
         label {
@@ -290,6 +293,7 @@
             border-bottom: 1px solid #eeeeee;
             font-size: 14px;
             color: #1f2937;
+            vertical-align: middle;
         }
 
         tbody tr:hover {
@@ -326,12 +330,29 @@
             margin-bottom: 6px;
         }
 
-        @media (max-width: 1100px) {
+        .small-text {
+            color: #6b7280;
+            font-size: 14px;
+            line-height: 1.7;
+        }
+
+        .money {
+            font-weight: 700;
+            color: #166534;
+        }
+
+        @media (max-width: 1200px) {
             .stats {
                 grid-template-columns: repeat(2, 1fr);
             }
 
-            .grid,
+            .grid-3 {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 900px) {
+            .grid-2,
             .grid-3 {
                 grid-template-columns: 1fr;
             }
@@ -339,7 +360,7 @@
 
         @media (max-width: 700px) {
             .hero {
-                min-height: 240px;
+                min-height: 230px;
                 padding: 24px;
             }
 
@@ -362,10 +383,10 @@
             const categoriaId = document.getElementById(categoriaSelectId).value;
             const marcaSelect = document.getElementById(marcaSelectId);
 
-            marcaSelect.innerHTML = '<option value="">Carregando...</option>';
+            marcaSelect.innerHTML = "<option value=''>Carregando...</option>";
 
             if (!categoriaId) {
-                marcaSelect.innerHTML = '<option value="">Selecione a marca</option>';
+                marcaSelect.innerHTML = "<option value=''>Selecione a marca</option>";
                 return;
             }
 
@@ -380,34 +401,107 @@
 
         <section class="hero">
             <div class="hero-content">
-                <div class="hero-badge">Grupo Queiroz • Controle Interno do TI</div>
-                <h1>Controle de Estoque do Setor - TI QRZ </h1>
+                <div class="hero-badge">Grupo Queiroz • Controle Interno</div>
+                <h1>Controle de Estoque do Setor de TI</h1>
                 <p>
-                    Gestão de categorias, marcas, regionais, transferências e entregas para colaboradores.
+                    Gestão de categorias, marcas, regionais, compras, transferências e entregas
+                    para colaboradores, com visão resumida do estoque no topo.
                 </p>
             </div>
         </section>
 
         <section class="stats">
             <div class="stat-card">
-                <span>Total de registros no estoque</span>
-                <strong>{{ estoque|length }}</strong>
+                <span>Registros no estoque</span>
+                <strong>{{ total_registros }}</strong>
             </div>
             <div class="stat-card">
-                <span>Regionais</span>
+                <span>Total de unidades</span>
+                <strong>{{ total_unidades }}</strong>
+            </div>
+            <div class="stat-card">
+                <span>Valor total em estoque</span>
+                <strong>R$ {{ '%.2f'|format(valor_estoque or 0) }}</strong>
+            </div>
+            <div class="stat-card">
+                <span>Regionais ativas</span>
                 <strong>{{ regionais|length }}</strong>
-            </div>
-            <div class="stat-card">
-                <span>Categorias</span>
-                <strong>{{ categorias|length }}</strong>
-            </div>
-            <div class="stat-card">
-                <span>Últimas entregas listadas</span>
-                <strong>{{ entregas|length }}</strong>
             </div>
         </section>
 
-        <section class="grid">
+        <section class="grid-3">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Cadastrar categoria</h2>
+                    <span class="tag">Novo item</span>
+                </div>
+
+                <form method="POST" action="/cadastrar_categoria">
+                    <label>Nome da categoria</label>
+                    <input type="text" name="nome_categoria" placeholder="Ex: Cabo de Rede" required>
+                    <button type="submit" class="btn btn-primary">Cadastrar categoria</button>
+                </form>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Cadastrar marca</h2>
+                    <span class="tag">Novo item</span>
+                </div>
+
+                <form method="POST" action="/cadastrar_marca">
+                    <label>Categoria</label>
+                    <select name="categoria_id_marca" required>
+                        <option value="">Selecione a categoria</option>
+                        {% for categoria in categorias %}
+                            <option value="{{ categoria['id'] }}">{{ categoria['nome'] }}</option>
+                        {% endfor %}
+                    </select>
+
+                    <label>Nome da marca</label>
+                    <input type="text" name="nome_marca" placeholder="Ex: Intelbras" required>
+
+                    <button type="submit" class="btn btn-primary">Cadastrar marca</button>
+                </form>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Consultar por categoria</h2>
+                    <span class="tag">Consulta</span>
+                </div>
+
+                <form method="GET">
+                    <label>Categoria</label>
+                    <select name="categoria_consulta" required>
+                        <option value="">Selecione a categoria</option>
+                        {% for categoria in categorias %}
+                            <option value="{{ categoria['id'] }}" {% if categoria_consulta == categoria['id']|string %}selected{% endif %}>
+                                {{ categoria['nome'] }}
+                            </option>
+                        {% endfor %}
+                    </select>
+
+                    <button type="submit" class="btn btn-dark">Consultar</button>
+                </form>
+
+                {% if resultado_consulta is not none %}
+                    <div class="consulta-box">
+                        <strong>Total em estoque: {{ resultado_consulta }}</strong>
+
+                        {% if resultado_por_regional %}
+                            <ul>
+                                {% for item in resultado_por_regional %}
+                                    <li>{{ item['regional'] }}: {{ item['total'] }}</li>
+                                {% endfor %}
+                            </ul>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+        </section>
+
+        <section class="grid-2">
             <div class="card">
                 <div class="card-header">
                     <h2 class="card-title">Adicionar ao estoque</h2>
@@ -438,6 +532,9 @@
 
                     <label>Quantidade</label>
                     <input type="number" name="quantidade" min="1" required>
+
+                    <label>Valor total da compra</label>
+                    <input type="number" step="0.01" name="valor_total_compra" placeholder="Ex: 100.00" required>
 
                     <button type="submit" class="btn btn-primary">Adicionar estoque</button>
                 </form>
@@ -487,7 +584,7 @@
             </div>
         </section>
 
-        <section class="grid-3">
+        <section class="grid-2">
             <div class="card">
                 <div class="card-header">
                     <h2 class="card-title">Entregar item</h2>
@@ -523,7 +620,7 @@
                     <input type="text" name="responsavel" placeholder="Nome da pessoa" required>
 
                     <label>Setor</label>
-                    <input type="text" name="setor" placeholder="Ex: Financeiro, Frente de Loja..." required>
+                    <input type="text" name="setor" placeholder="Ex: Financeiro" required>
 
                     <button type="submit" class="btn btn-primary">Registrar entrega</button>
                 </form>
@@ -531,55 +628,47 @@
 
             <div class="card">
                 <div class="card-header">
-                    <h2 class="card-title">Consultar por categoria</h2>
-                    <span class="tag">Consulta</span>
+                    <h2 class="card-title">Resumo rápido</h2>
+                    <span class="tag">BI</span>
                 </div>
 
-                <form method="GET">
-                    <label>Categoria</label>
-                    <select name="categoria_consulta" required>
-                        <option value="">Selecione a categoria</option>
-                        {% for categoria in categorias %}
-                            <option value="{{ categoria['id'] }}" {% if categoria_consulta == categoria['id']|string %}selected{% endif %}>
-                                {{ categoria['nome'] }}
-                            </option>
-                        {% endfor %}
-                    </select>
-
-                    <button type="submit" class="btn btn-dark">Consultar</button>
-                </form>
-
-                {% if resultado_consulta is not none %}
-                    <div class="consulta-box">
-                        <strong>Total em estoque: {{ resultado_consulta }}</strong>
-
-                        {% if resultado_por_regional %}
-                            <ul>
-                                {% for item in resultado_por_regional %}
-                                    <li>{{ item['regional'] }}: {{ item['total'] }}</li>
-                                {% endfor %}
-                            </ul>
-                        {% endif %}
-                    </div>
-                {% endif %}
-            </div>
-
-            <div class="card">
-                <div class="card-header">
-                    <h2 class="card-title">Resumo</h2>
-                    <span class="tag">Painel</span>
-                </div>
-
-                <p style="margin-bottom: 12px; color: #4b5563;">
-                    Use este MVP para:
+                <p class="small-text">
+                    Use essa tela para cadastrar novos tipos de itens sem alterar o código,
+                    controlar valores das compras, transferir materiais entre regionais e registrar
+                    entregas para colaboradores.
                 </p>
-                <ul style="padding-left: 20px; color: #374151; line-height: 1.9;">
-                    <li>Adicionar materiais por regional</li>
-                    <li>Transferir entre Mossoró, Natal e Paraíba</li>
-                    <li>Registrar entrega a colaboradores</li>
-                    <li>Consultar total por categoria</li>
-                    <li>Visualizar histórico recente</li>
-                </ul>
+
+                <br>
+
+                <p class="small-text">
+                    O valor do estoque é recalculado com base nas entradas, transferências e baixas.
+                </p>
+            </div>
+        </section>
+
+        <section class="table-card">
+            <h2 class="table-title">Resumo por categoria</h2>
+            <div class="table-wrapper">
+                {% if resumo_categorias %}
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Categoria</th>
+                            <th>Total em estoque</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in resumo_categorias %}
+                        <tr>
+                            <td>{{ item['categoria'] }}</td>
+                            <td>{{ item['total'] }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                    <div class="empty">Nenhuma categoria encontrada.</div>
+                {% endif %}
             </div>
         </section>
 
@@ -594,6 +683,8 @@
                             <th>Marca</th>
                             <th>Regional</th>
                             <th>Quantidade</th>
+                            <th>Valor Unitário</th>
+                            <th>Valor Total</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -603,6 +694,8 @@
                             <td>{{ item['marca'] }}</td>
                             <td>{{ item['regional'] }}</td>
                             <td>{{ item['quantidade'] }}</td>
+                            <td class="money">R$ {{ '%.2f'|format(item['valor_unitario'] or 0) }}</td>
+                            <td class="money">R$ {{ '%.2f'|format(item['valor_total'] or 0) }}</td>
                         </tr>
                         {% endfor %}
                     </tbody>
