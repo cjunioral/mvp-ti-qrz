@@ -45,9 +45,9 @@
             overflow: hidden;
             border-radius: 28px;
             background:
-                linear-gradient(120deg, rgba(17,17,17,0.88), rgba(17,17,17,0.72)),
-                url('/static/banner_qrz.jpg') center/cover no-repeat;
-            min-height: 240px;
+                linear-gradient(120deg, rgba(17,17,17,0.88), rgba(33, 31, 31, 0.72)),
+                url('/static/banner_qrz.png') center/cover no-repeat;
+            min-height: 350px;
             padding: 36px;
             display: flex;
             align-items: end;
@@ -493,7 +493,7 @@
                 <div class="card">
                     <form method="POST" action="/cadastrar_categoria">
                         <label>Nome da categoria</label>
-                        <input type="text" name="nome_categoria" placeholder="Ex: Cabo de Rede" required>
+                        <input type="text" name="nome_categoria" placeholder="Ex: Teclado" required>
                         <button type="submit" class="btn">Cadastrar categoria</button>
                     </form>
                 </div>
@@ -514,7 +514,7 @@
                         </select>
 
                         <label>Nome da marca</label>
-                        <input type="text" name="nome_marca" placeholder="Ex: Intelbras" required>
+                        <input type="text" name="nome_marca" placeholder="Ex: Logitech" required>
 
                         <button type="submit" class="btn">Cadastrar marca</button>
                     </form>
