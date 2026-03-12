@@ -189,12 +189,10 @@ def inserir_dados_iniciais():
     marcas_exemplo = [
         ("Logitech", mapa_categorias["Teclado"]),
         ("Multilaser", mapa_categorias["Teclado"]),
-        ("Genérico", mapa_categorias["Teclado"]),
 
         ("Logitech", mapa_categorias["Mouse"]),
         ("Multilaser", mapa_categorias["Mouse"]),
         ("HP", mapa_categorias["Mouse"]),
-        ("Genérico", mapa_categorias["Mouse"]),
 
         ("Bematech", mapa_categorias["Impressora de Cupom"]),
         ("Elgin", mapa_categorias["Impressora de Cupom"]),
@@ -204,18 +202,12 @@ def inserir_dados_iniciais():
         ("AOC", mapa_categorias["Monitor"]),
         ("Samsung", mapa_categorias["Monitor"]),
         ("Acer", mapa_categorias["Monitor"]),
-        ("Genérico", mapa_categorias["Monitor"]),
 
         ("Dell", mapa_categorias["Notebook"]),
         ("Samsung", mapa_categorias["Notebook"]),
         ("Lenovo", mapa_categorias["Notebook"]),
-        ("Acer", mapa_categorias["Notebook"]),
-
-        ("Genérico", mapa_categorias["Cabo HDMI"]),
-        ("Genérico", mapa_categorias["Cabo VGA"]),
-        ("Genérico", mapa_categorias["Cabo de Rede"]),
-        ("Genérico", mapa_categorias["Cabo de Impressora"]),
-        ("Genérico", mapa_categorias["Pin Pad"])
+        ("Acer", mapa_categorias["Notebook"])
+        
     ]
 
     for nome_marca, categoria_id in marcas_exemplo:
