@@ -4,22 +4,73 @@ import sqlite3
 app = Flask(__name__)
 DATABASE = "estoque.db"
 
-REGIONAIS = ["Natal", "Mossoró", "Paraíba"]
+ORIGENS = [
+    "Natal",
+    "Mossoró",
+    "Paraíba"
+]
+
+DESTINOS_INTERNOS = [
+    "Natal",
+    "Mossoró",
+    "Paraíba"
+]
+
+LOJAS = [
+    "001-HQ PATU",
+    "002-HQ MACAU",
+    "003-HQ CARAU",
+    "004-HQ SAO B",
+    "005-HQ PATOS",
+    "006-HQ N.BET",
+    "007-HQ BOA V",
+    "008-HQ ASSU",
+    "009-HQ A CON",
+    "010-QA MOSSO",
+    "011-QA ASSU",
+    "012-QA JOAO",
+    "013-QA SAO G",
+    "014-QA CEARA",
+    "015-QA PATOS",
+    "016-QA PARNA",
+    "017-QA CATOL",
+    "018-QA MONTE",
+    "019-QA ASSU02",
+    "020-NOR ATAC PA",
+    "021-QA BREJO",
+    "022-NOR ATAC",
+    "023-QA SAO B",
+    "024-QA ITAPO",
+    "025-NOR A SO",
+    "026-QA VEN E",
+    "027-NORD MAC",
+    "028-NOR A BA",
+    "040-AGIL PAT",
+    "041-CQ MOSSO",
+    "042-AGIL SG",
+    "043-COME J 1",
+    "044-POEDMA",
+    "045-LV SANTA",
+    "046-AGENCIA",
+    "047-COME J 2",
+    "048-SQ BV",
+    "049-SQ CEN",
+    "050-SQ ASSU",
+    "051-SQ ALT C",
+    "052-CQ ASSU",
+    "053-CQ BARRO",
+    "054-CQ JC",
+    "055-CQ S.GON",
+    "056-DEPOS CR",
+    "057-HQ CATOL",
+    "058-ASSU EST"
+]
 
 
 def conectar():
     conn = sqlite3.connect(DATABASE)
     conn.row_factory = sqlite3.Row
     return conn
-
-
-def coluna_existe(nome_tabela, nome_coluna):
-    conn = conectar()
-    cursor = conn.cursor()
-    cursor.execute(f"PRAGMA table_info({nome_tabela})")
-    colunas = cursor.fetchall()
-    conn.close()
-    return any(coluna["name"] == nome_coluna for coluna in colunas)
 
 
 def criar_tabelas():
@@ -48,26 +99,25 @@ def criar_tabelas():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             categoria_id INTEGER NOT NULL,
             marca_id INTEGER NOT NULL,
-            regional TEXT NOT NULL,
+            unidade TEXT NOT NULL,
             quantidade INTEGER NOT NULL DEFAULT 0,
-            UNIQUE(categoria_id, marca_id, regional),
+            UNIQUE(categoria_id, marca_id, unidade),
             FOREIGN KEY (categoria_id) REFERENCES categorias(id),
             FOREIGN KEY (marca_id) REFERENCES marcas(id)
         )
     """)
 
     cursor.execute("""
-        CREATE TABLE IF NOT EXISTS lotes_estoque (
+        CREATE TABLE IF NOT EXISTS entradas_estoque (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             categoria_id INTEGER NOT NULL,
             marca_id INTEGER NOT NULL,
-            regional TEXT NOT NULL,
-            quantidade_original INTEGER NOT NULL,
-            quantidade_disponivel INTEGER NOT NULL,
+            unidade TEXT NOT NULL,
+            quantidade INTEGER NOT NULL,
             valor_unitario REAL NOT NULL,
             valor_total REAL NOT NULL,
-            data_entrada TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             observacao TEXT,
+            data_entrada TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (categoria_id) REFERENCES categorias(id),
             FOREIGN KEY (marca_id) REFERENCES marcas(id)
         )
@@ -80,6 +130,7 @@ def criar_tabelas():
             marca_id INTEGER NOT NULL,
             origem TEXT NOT NULL,
             destino TEXT NOT NULL,
+            tipo_destino TEXT NOT NULL,
             quantidade INTEGER NOT NULL,
             data_movimentacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (categoria_id) REFERENCES categorias(id),
@@ -92,7 +143,7 @@ def criar_tabelas():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             categoria_id INTEGER NOT NULL,
             marca_id INTEGER NOT NULL,
-            regional TEXT NOT NULL,
+            unidade TEXT NOT NULL,
             quantidade INTEGER NOT NULL,
             responsavel TEXT NOT NULL,
             setor TEXT NOT NULL,
@@ -101,22 +152,6 @@ def criar_tabelas():
             FOREIGN KEY (marca_id) REFERENCES marcas(id)
         )
     """)
-    
-    cursor.execute("""
-    CREATE TABLE IF NOT EXISTS entradas_estoque (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        categoria_id INTEGER NOT NULL,
-        marca_id INTEGER NOT NULL,
-        regional TEXT NOT NULL,
-        quantidade INTEGER NOT NULL,
-        valor_unitario REAL NOT NULL,
-        valor_total REAL NOT NULL,
-        observacao TEXT,
-        data_entrada TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (categoria_id) REFERENCES categorias(id),
-        FOREIGN KEY (marca_id) REFERENCES marcas(id)
-    )
-""")
 
     conn.commit()
     conn.close()
@@ -134,6 +169,7 @@ def inserir_dados_iniciais():
         "Notebook",
         "Cabo HDMI",
         "Cabo VGA",
+        "Cabo de Rede",
         "Cabo de Impressora",
         "Pin Pad"
     ]
@@ -177,6 +213,7 @@ def inserir_dados_iniciais():
 
         ("Genérico", mapa_categorias["Cabo HDMI"]),
         ("Genérico", mapa_categorias["Cabo VGA"]),
+        ("Genérico", mapa_categorias["Cabo de Rede"]),
         ("Genérico", mapa_categorias["Cabo de Impressora"]),
         ("Genérico", mapa_categorias["Pin Pad"])
     ]
@@ -189,106 +226,6 @@ def inserir_dados_iniciais():
 
     conn.commit()
     conn.close()
-
-
-def somar_estoque(cursor, categoria_id, marca_id, regional, quantidade):
-    cursor.execute("""
-        SELECT id, quantidade
-        FROM estoque
-        WHERE categoria_id = ? AND marca_id = ? AND regional = ?
-    """, (categoria_id, marca_id, regional))
-
-    item = cursor.fetchone()
-
-    if item:
-        nova_quantidade = item["quantidade"] + quantidade
-        cursor.execute("""
-            UPDATE estoque
-            SET quantidade = ?
-            WHERE id = ?
-        """, (nova_quantidade, item["id"]))
-    else:
-        cursor.execute("""
-            INSERT INTO estoque (categoria_id, marca_id, regional, quantidade)
-            VALUES (?, ?, ?, ?)
-        """, (categoria_id, marca_id, regional, quantidade))
-
-
-def subtrair_estoque(cursor, categoria_id, marca_id, regional, quantidade):
-    cursor.execute("""
-        SELECT id, quantidade
-        FROM estoque
-        WHERE categoria_id = ? AND marca_id = ? AND regional = ?
-    """, (categoria_id, marca_id, regional))
-
-    item = cursor.fetchone()
-
-    if not item or item["quantidade"] < quantidade:
-        return False
-
-    nova_quantidade = item["quantidade"] - quantidade
-    cursor.execute("""
-        UPDATE estoque
-        SET quantidade = ?
-        WHERE id = ?
-    """, (nova_quantidade, item["id"]))
-
-    return True
-
-
-def consumir_lotes_fifo(cursor, categoria_id, marca_id, regional, quantidade):
-    """
-    Consome lotes em FIFO e retorna uma lista com os pedaços consumidos:
-    [{"quantidade": x, "valor_unitario": y}, ...]
-    """
-    cursor.execute("""
-        SELECT id, quantidade_disponivel, valor_unitario
-        FROM lotes_estoque
-        WHERE categoria_id = ?
-          AND marca_id = ?
-          AND regional = ?
-          AND quantidade_disponivel > 0
-        ORDER BY datetime(data_entrada) ASC, id ASC
-    """, (categoria_id, marca_id, regional))
-
-    lotes = cursor.fetchall()
-
-    restante = quantidade
-    consumidos = []
-
-    for lote in lotes:
-        if restante <= 0:
-            break
-
-        disponivel = lote["quantidade_disponivel"]
-        retirar = min(disponivel, restante)
-        novo_disponivel = disponivel - retirar
-
-        cursor.execute("""
-            UPDATE lotes_estoque
-            SET quantidade_disponivel = ?
-            WHERE id = ?
-        """, (novo_disponivel, lote["id"]))
-
-        consumidos.append({
-            "quantidade": retirar,
-            "valor_unitario": lote["valor_unitario"]
-        })
-
-        restante -= retirar
-
-    if restante > 0:
-        return None
-
-    return consumidos
-
-
-def valor_total_em_estoque(cursor):
-    cursor.execute("""
-        SELECT COALESCE(SUM(quantidade_disponivel * valor_unitario), 0) AS total
-        FROM lotes_estoque
-    """)
-    return cursor.fetchone()["total"]
 
 
 criar_tabelas()
@@ -308,101 +245,21 @@ def index():
             e.id,
             c.nome AS categoria,
             m.nome AS marca,
-            e.regional,
-            e.quantidade,
-            COALESCE((
-                SELECT SUM(le.quantidade_disponivel * le.valor_unitario)
-                FROM lotes_estoque le
-                WHERE le.categoria_id = e.categoria_id
-                  AND le.marca_id = e.marca_id
-                  AND le.regional = e.regional
-            ), 0) AS valor_total
+            e.unidade,
+            e.quantidade
         FROM estoque e
         JOIN categorias c ON e.categoria_id = c.id
         JOIN marcas m ON e.marca_id = m.id
-        ORDER BY c.nome, m.nome, e.regional
+        ORDER BY e.quantidade ASC, c.nome, m.nome, e.unidade
     """)
     estoque = cursor.fetchall()
 
     cursor.execute("""
         SELECT
-            mov.id,
-            c.nome AS categoria,
-            m.nome AS marca,
-            mov.origem,
-            mov.destino,
-            mov.quantidade,
-            mov.data_movimentacao
-        FROM movimentacoes mov
-        JOIN categorias c ON mov.categoria_id = c.id
-        JOIN marcas m ON mov.marca_id = m.id
-        ORDER BY mov.id DESC
-        LIMIT 10
-    """)
-    movimentacoes = cursor.fetchall()
-
-    cursor.execute("""
-        SELECT
-            ent.id,
-            c.nome AS categoria,
-            m.nome AS marca,
-            ent.regional,
-            ent.quantidade,
-            ent.responsavel,
-            ent.setor,
-            ent.data_entrega
-        FROM entregas ent
-        JOIN categorias c ON ent.categoria_id = c.id
-        JOIN marcas m ON ent.marca_id = m.id
-        ORDER BY ent.id DESC
-        LIMIT 10
-    """)
-    entregas = cursor.fetchall()
-
-    categoria_consulta = request.args.get("categoria_consulta", "").strip()
-    resultado_consulta = None
-    resultado_por_regional = []
-
-    if categoria_consulta:
-        cursor.execute("""
-            SELECT COALESCE(SUM(e.quantidade), 0) AS total
-            FROM estoque e
-            WHERE e.categoria_id = ?
-        """, (categoria_consulta,))
-        resultado_consulta = cursor.fetchone()["total"]
-
-        cursor.execute("""
-            SELECT e.regional, SUM(e.quantidade) AS total
-            FROM estoque e
-            WHERE e.categoria_id = ?
-            GROUP BY e.regional
-            ORDER BY e.regional
-        """, (categoria_consulta,))
-        resultado_por_regional = cursor.fetchall()
-
-    cursor.execute("SELECT COUNT(*) AS total_registros FROM estoque")
-    total_registros = cursor.fetchone()["total_registros"]
-
-    cursor.execute("SELECT COALESCE(SUM(quantidade), 0) AS total_unidades FROM estoque")
-    total_unidades = cursor.fetchone()["total_unidades"]
-
-    valor_estoque = valor_total_em_estoque(cursor)
-
-    cursor.execute("""
-        SELECT c.nome AS categoria, COALESCE(SUM(e.quantidade), 0) AS total
-        FROM categorias c
-        LEFT JOIN estoque e ON e.categoria_id = c.id
-        GROUP BY c.id, c.nome
-        ORDER BY total DESC, c.nome
-    """)
-    resumo_categorias = cursor.fetchall()
-    
-    cursor.execute("""
-        SELECT
             en.id,
             c.nome AS categoria,
             m.nome AS marca,
-            en.regional,
+            en.unidade,
             en.quantidade,
             en.valor_unitario,
             en.valor_total,
@@ -416,23 +273,130 @@ def index():
     """)
     entradas_estoque = cursor.fetchall()
 
+    cursor.execute("""
+        SELECT
+            mov.id,
+            c.nome AS categoria,
+            m.nome AS marca,
+            mov.origem,
+            mov.destino,
+            mov.tipo_destino,
+            mov.quantidade,
+            mov.data_movimentacao
+        FROM movimentacoes mov
+        JOIN categorias c ON mov.categoria_id = c.id
+        JOIN marcas m ON mov.marca_id = m.id
+        ORDER BY mov.id DESC
+        LIMIT 20
+    """)
+    movimentacoes = cursor.fetchall()
+
+    cursor.execute("""
+        SELECT
+            ent.id,
+            c.nome AS categoria,
+            m.nome AS marca,
+            ent.unidade,
+            ent.quantidade,
+            ent.responsavel,
+            ent.setor,
+            ent.data_entrega
+        FROM entregas ent
+        JOIN categorias c ON ent.categoria_id = c.id
+        JOIN marcas m ON ent.marca_id = m.id
+        ORDER BY ent.id DESC
+        LIMIT 20
+    """)
+    entregas = cursor.fetchall()
+
+    categoria_consulta = request.args.get("categoria_consulta", "").strip()
+    resultado_consulta = None
+    resultado_por_unidade = []
+
+    if categoria_consulta:
+        cursor.execute("""
+            SELECT COALESCE(SUM(e.quantidade), 0) AS total
+            FROM estoque e
+            WHERE e.categoria_id = ?
+        """, (categoria_consulta,))
+        resultado_consulta = cursor.fetchone()["total"]
+
+        cursor.execute("""
+            SELECT e.unidade, SUM(e.quantidade) AS total
+            FROM estoque e
+            WHERE e.categoria_id = ?
+            GROUP BY e.unidade
+            ORDER BY e.unidade
+        """, (categoria_consulta,))
+        resultado_por_unidade = cursor.fetchall()
+
+    cursor.execute("SELECT COUNT(*) AS total_registros FROM estoque")
+    total_registros = cursor.fetchone()["total_registros"]
+
+    cursor.execute("SELECT COALESCE(SUM(quantidade), 0) AS total_unidades FROM estoque")
+    total_unidades = cursor.fetchone()["total_unidades"]
+
+    cursor.execute("SELECT COALESCE(SUM(valor_total), 0) AS total_compras FROM entradas_estoque")
+    total_compras = cursor.fetchone()["total_compras"]
+
+    cursor.execute("SELECT COUNT(*) AS total_baixo FROM estoque WHERE quantidade <= 3")
+    total_baixo = cursor.fetchone()["total_baixo"]
+
+    cursor.execute("""
+        SELECT c.nome AS categoria, COALESCE(SUM(e.quantidade), 0) AS total
+        FROM categorias c
+        LEFT JOIN estoque e ON e.categoria_id = c.id
+        GROUP BY c.id, c.nome
+        ORDER BY total ASC, c.nome
+    """)
+    resumo_categorias = cursor.fetchall()
+
+    cursor.execute("""
+        SELECT e.unidade, COALESCE(SUM(e.quantidade), 0) AS total
+        FROM estoque e
+        WHERE e.unidade IN ('Natal', 'Mossoró', 'Paraíba')
+        GROUP BY e.unidade
+        ORDER BY total ASC, e.unidade
+    """)
+    resumo_regionais = cursor.fetchall()
+
+    cursor.execute("""
+        SELECT
+            c.nome AS categoria,
+            m.nome AS marca,
+            e.unidade,
+            e.quantidade
+        FROM estoque e
+        JOIN categorias c ON e.categoria_id = c.id
+        JOIN marcas m ON e.marca_id = m.id
+        WHERE e.quantidade <= 3
+        ORDER BY e.quantidade ASC, c.nome, m.nome, e.unidade
+        LIMIT 12
+    """)
+    estoque_baixo = cursor.fetchall()
+
     conn.close()
 
     return render_template(
         "index.html",
         categorias=categorias,
         estoque=estoque,
+        entradas_estoque=entradas_estoque,
         movimentacoes=movimentacoes,
         entregas=entregas,
-        regionais=REGIONAIS,
+        origens=ORIGENS,
+        destinos_internos=DESTINOS_INTERNOS,
+        lojas=LOJAS,
         categoria_consulta=categoria_consulta,
         resultado_consulta=resultado_consulta,
-        resultado_por_regional=resultado_por_regional,
+        resultado_por_unidade=resultado_por_unidade,
         total_registros=total_registros,
         total_unidades=total_unidades,
-        valor_estoque=valor_estoque,
+        total_compras=total_compras,
+        total_baixo=total_baixo,
         resumo_categorias=resumo_categorias,
-        entradas_estoque=entradas_estoque
+        resumo_regionais=resumo_regionais,
+        estoque_baixo=estoque_baixo
     )
 
 
@@ -498,12 +462,12 @@ def cadastrar_marca():
 def adicionar_estoque():
     categoria_id = request.form.get("categoria_id")
     marca_id = request.form.get("marca_id")
-    regional = request.form.get("regional")
+    unidade = request.form.get("unidade")
     quantidade = request.form.get("quantidade")
     valor_total_compra = request.form.get("valor_total_compra")
     observacao = request.form.get("observacao", "").strip()
 
-    if not all([categoria_id, marca_id, regional, quantidade, valor_total_compra]):
+    if not all([categoria_id, marca_id, unidade, quantidade, valor_total_compra]):
         return redirect(url_for("index"))
 
     try:
@@ -520,46 +484,37 @@ def adicionar_estoque():
     conn = conectar()
     cursor = conn.cursor()
 
-    somar_estoque(cursor, categoria_id, marca_id, regional, quantidade)
+    cursor.execute("""
+        SELECT id, quantidade
+        FROM estoque
+        WHERE categoria_id = ? AND marca_id = ? AND unidade = ?
+    """, (categoria_id, marca_id, unidade))
+
+    item = cursor.fetchone()
+
+    if item:
+        nova_quantidade = item["quantidade"] + quantidade
+        cursor.execute("""
+            UPDATE estoque
+            SET quantidade = ?
+            WHERE id = ?
+        """, (nova_quantidade, item["id"]))
+    else:
+        cursor.execute("""
+            INSERT INTO estoque (categoria_id, marca_id, unidade, quantidade)
+            VALUES (?, ?, ?, ?)
+        """, (categoria_id, marca_id, unidade, quantidade))
 
     cursor.execute("""
-        INSERT INTO lotes_estoque (
-            categoria_id,
-            marca_id,
-            regional,
-            quantidade_original,
-            quantidade_disponivel,
-            valor_unitario,
-            valor_total,
-            observacao
+        INSERT INTO entradas_estoque (
+            categoria_id, marca_id, unidade, quantidade,
+            valor_unitario, valor_total, observacao
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
     """, (
         categoria_id,
         marca_id,
-        regional,
-        quantidade,
-        quantidade,
-        valor_unitario,
-        valor_total_compra,
-        observacao
-    ))
-    
-    cursor.execute("""
-    INSERT INTO entradas_estoque (
-        categoria_id,
-        marca_id,
-        regional,
-        quantidade,
-        valor_unitario,
-        valor_total,
-        observacao
-    )
-    VALUES (?, ?, ?, ?, ?, ?, ?)
-""", (
-        categoria_id,
-        marca_id,
-        regional,
+        unidade,
         quantidade,
         valor_unitario,
         valor_total_compra,
@@ -577,8 +532,17 @@ def transferir():
     categoria_id = request.form.get("categoria_id")
     marca_id = request.form.get("marca_id")
     origem = request.form.get("origem")
-    destino = request.form.get("destino")
+    tipo_destino = request.form.get("tipo_destino")
+    destino_interno = request.form.get("destino_interno")
+    destino_loja = request.form.get("destino_loja")
     quantidade = request.form.get("quantidade")
+
+    if tipo_destino == "interno":
+        destino = destino_interno
+    elif tipo_destino == "loja":
+        destino = destino_loja
+    else:
+        destino = None
 
     if not all([categoria_id, marca_id, origem, destino, quantidade]):
         return redirect(url_for("index"))
@@ -597,51 +561,52 @@ def transferir():
     conn = conectar()
     cursor = conn.cursor()
 
-    ok = subtrair_estoque(cursor, categoria_id, marca_id, origem, quantidade)
-    if not ok:
+    cursor.execute("""
+        SELECT id, quantidade
+        FROM estoque
+        WHERE categoria_id = ? AND marca_id = ? AND unidade = ?
+    """, (categoria_id, marca_id, origem))
+
+    estoque_origem = cursor.fetchone()
+
+    if not estoque_origem or estoque_origem["quantidade"] < quantidade:
         conn.close()
         return redirect(url_for("index"))
 
-    consumidos = consumir_lotes_fifo(cursor, categoria_id, marca_id, origem, quantidade)
-    if consumidos is None:
-        conn.rollback()
-        conn.close()
-        return redirect(url_for("index"))
-
-    somar_estoque(cursor, categoria_id, marca_id, destino, quantidade)
-
-    for parte in consumidos:
-        qtd = parte["quantidade"]
-        v_unit = parte["valor_unitario"]
-        v_total = qtd * v_unit
-
-        cursor.execute("""
-            INSERT INTO lotes_estoque (
-                categoria_id,
-                marca_id,
-                regional,
-                quantidade_original,
-                quantidade_disponivel,
-                valor_unitario,
-                valor_total,
-                observacao
-            )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        """, (
-            categoria_id,
-            marca_id,
-            destino,
-            qtd,
-            qtd,
-            v_unit,
-            v_total,
-            f"Transferência de {origem} para {destino}"
-        ))
+    nova_qtd_origem = estoque_origem["quantidade"] - quantidade
+    cursor.execute("""
+        UPDATE estoque
+        SET quantidade = ?
+        WHERE id = ?
+    """, (nova_qtd_origem, estoque_origem["id"]))
 
     cursor.execute("""
-        INSERT INTO movimentacoes (categoria_id, marca_id, origem, destino, quantidade)
-        VALUES (?, ?, ?, ?, ?)
-    """, (categoria_id, marca_id, origem, destino, quantidade))
+        SELECT id, quantidade
+        FROM estoque
+        WHERE categoria_id = ? AND marca_id = ? AND unidade = ?
+    """, (categoria_id, marca_id, destino))
+
+    estoque_destino = cursor.fetchone()
+
+    if estoque_destino:
+        nova_qtd_destino = estoque_destino["quantidade"] + quantidade
+        cursor.execute("""
+            UPDATE estoque
+            SET quantidade = ?
+            WHERE id = ?
+        """, (nova_qtd_destino, estoque_destino["id"]))
+    else:
+        cursor.execute("""
+            INSERT INTO estoque (categoria_id, marca_id, unidade, quantidade)
+            VALUES (?, ?, ?, ?)
+        """, (categoria_id, marca_id, destino, quantidade))
+
+    cursor.execute("""
+        INSERT INTO movimentacoes (
+            categoria_id, marca_id, origem, destino, tipo_destino, quantidade
+        )
+        VALUES (?, ?, ?, ?, ?, ?)
+    """, (categoria_id, marca_id, origem, destino, tipo_destino, quantidade))
 
     conn.commit()
     conn.close()
@@ -653,12 +618,12 @@ def transferir():
 def entregar():
     categoria_id = request.form.get("categoria_id")
     marca_id = request.form.get("marca_id")
-    regional = request.form.get("regional")
+    unidade = request.form.get("unidade")
     quantidade = request.form.get("quantidade")
     responsavel = request.form.get("responsavel", "").strip()
     setor = request.form.get("setor", "").strip()
 
-    if not all([categoria_id, marca_id, regional, quantidade, responsavel, setor]):
+    if not all([categoria_id, marca_id, unidade, quantidade, responsavel, setor]):
         return redirect(url_for("index"))
 
     try:
@@ -672,23 +637,32 @@ def entregar():
     conn = conectar()
     cursor = conn.cursor()
 
-    ok = subtrair_estoque(cursor, categoria_id, marca_id, regional, quantidade)
-    if not ok:
+    cursor.execute("""
+        SELECT id, quantidade
+        FROM estoque
+        WHERE categoria_id = ? AND marca_id = ? AND unidade = ?
+    """, (categoria_id, marca_id, unidade))
+
+    item = cursor.fetchone()
+
+    if not item or item["quantidade"] < quantidade:
         conn.close()
         return redirect(url_for("index"))
 
-    consumidos = consumir_lotes_fifo(cursor, categoria_id, marca_id, regional, quantidade)
-    if consumidos is None:
-        conn.rollback()
-        conn.close()
-        return redirect(url_for("index"))
+    nova_quantidade = item["quantidade"] - quantidade
+
+    cursor.execute("""
+        UPDATE estoque
+        SET quantidade = ?
+        WHERE id = ?
+    """, (nova_quantidade, item["id"]))
 
     cursor.execute("""
         INSERT INTO entregas (
-            categoria_id, marca_id, regional, quantidade, responsavel, setor
+            categoria_id, marca_id, unidade, quantidade, responsavel, setor
         )
         VALUES (?, ?, ?, ?, ?, ?)
-    """, (categoria_id, marca_id, regional, quantidade, responsavel, setor))
+    """, (categoria_id, marca_id, unidade, quantidade, responsavel, setor))
 
     conn.commit()
     conn.close()
