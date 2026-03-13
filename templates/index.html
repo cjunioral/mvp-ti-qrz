@@ -407,19 +407,22 @@
         <section class="stats">
             <div class="stat-card">
                 <span>Registros no estoque</span>
-                <strong>{{ total_registros }}</strong>
+                <strong>{{ total_registros or 0 }}</strong>
             </div>
+
             <div class="stat-card">
                 <span>Total de unidades</span>
-                <strong>{{ total_unidades }}</strong>
+                <strong>{{ total_unidades or 0 }}</strong>
             </div>
+
             <div class="stat-card">
                 <span>Total de compras registradas</span>
                 <strong>R$ {{ '%.2f'|format(total_compras or 0) }}</strong>
             </div>
+
             <div class="stat-card">
                 <span>Itens com estoque baixo</span>
-                <strong>{{ total_baixo }}</strong>
+                <strong>{{ total_baixo or 0 }}</strong>
             </div>
         </section>
 
@@ -826,11 +829,19 @@
                                         </thead>
                                         <tbody>
                                             {% for item in resultado_marca_unidade %}
-                                            <tr>
-                                                <td style="padding:8px; border-bottom:1px solid #eee;">{{ item['marca'] }}</td>
-                                                <td style="padding:8px; border-bottom:1px solid #eee;">{{ item['unidade'] }}</td>
-                                                <td style="padding:8px; border-bottom:1px solid #eee;">{{ item['total'] }}</td>
-                                            </tr>
+                                                {% if item['total'] > 0 %}
+                                                <tr>
+                                                    <td style="padding:8px; border-bottom:1px solid #eee;">
+                                                        {{ item['marca'] }}
+                                                    </td>
+                                                    <td style="padding:8px; border-bottom:1px solid #eee;">
+                                                        {{ item['unidade'] }}
+                                                    </td>
+                                                    <td style="padding:8px; border-bottom:1px solid #eee;">
+                                                        {{ item['total'] }}
+                                                    </td>
+                                                </tr>
+                                                {% endif %}
                                             {% endfor %}
                                         </tbody>
                                     </table>

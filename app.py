@@ -224,6 +224,7 @@ inserir_dados_iniciais()
 
 
 @app.route("/")
+@app.route("/")
 def index():
     conn = conectar()
     cursor = conn.cursor()
@@ -241,6 +242,7 @@ def index():
         FROM estoque e
         JOIN categorias c ON e.categoria_id = c.id
         JOIN marcas m ON e.marca_id = m.id
+        WHERE e.quantidade > 0
         ORDER BY e.quantidade ASC, c.nome, m.nome, e.unidade
     """)
     estoque = cursor.fetchall()
@@ -318,21 +320,25 @@ def index():
             SELECT e.unidade, SUM(e.quantidade) AS total
             FROM estoque e
             WHERE e.categoria_id = ?
+            AND e.quantidade > 0
             GROUP BY e.unidade
+            HAVING SUM(e.quantidade) > 0
             ORDER BY e.unidade
         """, (categoria_consulta,))
         resultado_por_unidade = cursor.fetchall()
 
         cursor.execute("""
-            SELECT m.nome AS marca, COALESCE(SUM(e.quantidade), 0) AS total
+            SELECT m.nome AS marca, SUM(e.quantidade) AS total
             FROM estoque e
             JOIN marcas m ON e.marca_id = m.id
             WHERE e.categoria_id = ?
+            AND e.quantidade > 0
             GROUP BY m.id, m.nome
+            HAVING SUM(e.quantidade) > 0
             ORDER BY total DESC, m.nome
         """, (categoria_consulta,))
         resultado_por_marca = cursor.fetchall()
-
+        
         cursor.execute("""
             SELECT
                 m.nome AS marca,
@@ -346,10 +352,36 @@ def index():
         """, (categoria_consulta,))
         resultado_marca_unidade = cursor.fetchall()
 
+    cursor.execute("SELECT COUNT(*) AS total_registros FROM estoque WHERE quantidade > 0")
+    total_registros = cursor.fetchone()["total_registros"]
+
+    cursor.execute("SELECT COALESCE(SUM(quantidade), 0) AS total_unidades FROM estoque WHERE quantidade > 0")
+    total_unidades = cursor.fetchone()["total_unidades"]
+
+    cursor.execute("SELECT COALESCE(SUM(valor_total), 0) AS total_compras FROM entradas_estoque")
+    total_compras = cursor.fetchone()["total_compras"]
+
+    cursor.execute("SELECT COUNT(*) AS total_baixo FROM estoque WHERE quantidade > 0 AND quantidade <= 3")
+    total_baixo = cursor.fetchone()["total_baixo"]
+
+    cursor.execute("""
+        SELECT
+            c.nome AS categoria,
+            COALESCE(SUM(e.quantidade), 0) AS total
+        FROM categorias c
+        LEFT JOIN estoque e
+            ON e.categoria_id = c.id
+            AND e.quantidade > 0
+        GROUP BY c.id, c.nome
+        ORDER BY total ASC, c.nome
+    """)
+    resumo_categorias = cursor.fetchall()
+
     cursor.execute("""
         SELECT e.unidade, COALESCE(SUM(e.quantidade), 0) AS total
         FROM estoque e
         WHERE e.unidade IN ('Natal', 'Mossoró', 'Paraíba')
+          AND e.quantidade > 0
         GROUP BY e.unidade
         ORDER BY total ASC, e.unidade
     """)
@@ -364,7 +396,7 @@ def index():
         FROM estoque e
         JOIN categorias c ON e.categoria_id = c.id
         JOIN marcas m ON e.marca_id = m.id
-        WHERE e.quantidade <= 3
+        WHERE e.quantidade > 0 AND e.quantidade <= 3
         ORDER BY e.quantidade ASC, c.nome, m.nome, e.unidade
         LIMIT 12
     """)
@@ -387,6 +419,11 @@ def index():
         resultado_por_unidade=resultado_por_unidade,
         resultado_por_marca=resultado_por_marca,
         resultado_marca_unidade=resultado_marca_unidade,
+        total_registros=total_registros,
+        total_unidades=total_unidades,
+        total_compras=total_compras,
+        total_baixo=total_baixo,
+        resumo_categorias=resumo_categorias,
         resumo_regionais=resumo_regionais,
         estoque_baixo=estoque_baixo
     )
