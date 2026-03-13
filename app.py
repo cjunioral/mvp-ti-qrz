@@ -1,7 +1,8 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, flash
 import sqlite3
 
 app = Flask(__name__)
+app.secret_key = "estoque-ti-qrz-secret-key"
 DATABASE = "estoque.db"
 
 ORIGENS = [
@@ -132,6 +133,7 @@ def criar_tabelas():
             destino TEXT NOT NULL,
             tipo_destino TEXT NOT NULL,
             quantidade INTEGER NOT NULL,
+            observacao TEXT,
             data_movimentacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (categoria_id) REFERENCES categorias(id),
             FOREIGN KEY (marca_id) REFERENCES marcas(id)
@@ -147,7 +149,53 @@ def criar_tabelas():
             quantidade INTEGER NOT NULL,
             responsavel TEXT NOT NULL,
             setor TEXT NOT NULL,
+            observacao TEXT,
             data_entrega TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (categoria_id) REFERENCES categorias(id),
+            FOREIGN KEY (marca_id) REFERENCES marcas(id)
+        )
+    """)
+
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS estoque_reparos (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            categoria_id INTEGER NOT NULL,
+            marca_id INTEGER NOT NULL,
+            regional_reparo TEXT NOT NULL,
+            quantidade INTEGER NOT NULL DEFAULT 0,
+            UNIQUE(categoria_id, marca_id, regional_reparo),
+            FOREIGN KEY (categoria_id) REFERENCES categorias(id),
+            FOREIGN KEY (marca_id) REFERENCES marcas(id)
+        )
+    """)
+
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS reparos_recebidos (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            categoria_id INTEGER NOT NULL,
+            marca_id INTEGER NOT NULL,
+            origem_loja TEXT NOT NULL,
+            regional_reparo TEXT NOT NULL,
+            quantidade INTEGER NOT NULL,
+            observacao TEXT,
+            data_recebimento TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (categoria_id) REFERENCES categorias(id),
+            FOREIGN KEY (marca_id) REFERENCES marcas(id)
+        )
+    """)
+
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS reparos_saidas (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            categoria_id INTEGER NOT NULL,
+            marca_id INTEGER NOT NULL,
+            regional_reparo TEXT NOT NULL,
+            destino_tipo TEXT NOT NULL,
+            destino_nome TEXT NOT NULL,
+            responsavel TEXT,
+            quantidade INTEGER NOT NULL,
+            observacao TEXT,
+            data_saida TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (categoria_id) REFERENCES categorias(id),
             FOREIGN KEY (marca_id) REFERENCES marcas(id)
         )
@@ -189,10 +237,12 @@ def inserir_dados_iniciais():
     marcas_exemplo = [
         ("Logitech", mapa_categorias["Teclado"]),
         ("Multilaser", mapa_categorias["Teclado"]),
+        ("Genérico", mapa_categorias["Teclado"]),
 
         ("Logitech", mapa_categorias["Mouse"]),
         ("Multilaser", mapa_categorias["Mouse"]),
         ("HP", mapa_categorias["Mouse"]),
+        ("Genérico", mapa_categorias["Mouse"]),
 
         ("Bematech", mapa_categorias["Impressora de Cupom"]),
         ("Elgin", mapa_categorias["Impressora de Cupom"]),
@@ -219,15 +269,50 @@ def inserir_dados_iniciais():
     conn.close()
 
 
+def obter_int(valor):
+    try:
+        return int(valor)
+    except (TypeError, ValueError):
+        return None
+
+
+def obter_float(valor):
+    try:
+        return float(valor)
+    except (TypeError, ValueError):
+        return None
+
+
+def aplicar_filtro_datas(query_base, coluna_data, data_inicio, data_fim, params=None):
+    if params is None:
+        params = []
+
+    filtros = []
+    if data_inicio:
+        filtros.append(f"date({coluna_data}) >= date(?)")
+        params.append(data_inicio)
+
+    if data_fim:
+        filtros.append(f"date({coluna_data}) <= date(?)")
+        params.append(data_fim)
+
+    if filtros:
+        query_base += " WHERE " + " AND ".join(filtros)
+
+    return query_base, params
+
+
 criar_tabelas()
 inserir_dados_iniciais()
 
 
 @app.route("/")
-@app.route("/")
 def index():
     conn = conectar()
     cursor = conn.cursor()
+
+    data_inicio = request.args.get("data_inicio", "").strip()
+    data_fim = request.args.get("data_fim", "").strip()
 
     cursor.execute("SELECT * FROM categorias ORDER BY nome")
     categorias = cursor.fetchall()
@@ -249,6 +334,21 @@ def index():
 
     cursor.execute("""
         SELECT
+            er.id,
+            c.nome AS categoria,
+            m.nome AS marca,
+            er.regional_reparo,
+            er.quantidade
+        FROM estoque_reparos er
+        JOIN categorias c ON er.categoria_id = c.id
+        JOIN marcas m ON er.marca_id = m.id
+        WHERE er.quantidade > 0
+        ORDER BY er.quantidade ASC, c.nome, m.nome, er.regional_reparo
+    """)
+    estoque_reparos = cursor.fetchall()
+
+    query_entradas = """
+        SELECT
             en.id,
             c.nome AS categoria,
             m.nome AS marca,
@@ -261,12 +361,15 @@ def index():
         FROM entradas_estoque en
         JOIN categorias c ON en.categoria_id = c.id
         JOIN marcas m ON en.marca_id = m.id
-        ORDER BY en.id DESC
-        LIMIT 50
-    """)
+    """
+    query_entradas, params_entradas = aplicar_filtro_datas(
+        query_entradas, "en.data_entrada", data_inicio, data_fim, []
+    )
+    query_entradas += " ORDER BY en.id DESC LIMIT 100"
+    cursor.execute(query_entradas, params_entradas)
     entradas_estoque = cursor.fetchall()
 
-    cursor.execute("""
+    query_mov = """
         SELECT
             mov.id,
             c.nome AS categoria,
@@ -275,16 +378,20 @@ def index():
             mov.destino,
             mov.tipo_destino,
             mov.quantidade,
+            mov.observacao,
             mov.data_movimentacao
         FROM movimentacoes mov
         JOIN categorias c ON mov.categoria_id = c.id
         JOIN marcas m ON mov.marca_id = m.id
-        ORDER BY mov.id DESC
-        LIMIT 20
-    """)
+    """
+    query_mov, params_mov = aplicar_filtro_datas(
+        query_mov, "mov.data_movimentacao", data_inicio, data_fim, []
+    )
+    query_mov += " ORDER BY mov.id DESC LIMIT 100"
+    cursor.execute(query_mov, params_mov)
     movimentacoes = cursor.fetchall()
 
-    cursor.execute("""
+    query_entregas = """
         SELECT
             ent.id,
             c.nome AS categoria,
@@ -293,14 +400,62 @@ def index():
             ent.quantidade,
             ent.responsavel,
             ent.setor,
+            ent.observacao,
             ent.data_entrega
         FROM entregas ent
         JOIN categorias c ON ent.categoria_id = c.id
         JOIN marcas m ON ent.marca_id = m.id
-        ORDER BY ent.id DESC
-        LIMIT 20
-    """)
+    """
+    query_entregas, params_entregas = aplicar_filtro_datas(
+        query_entregas, "ent.data_entrega", data_inicio, data_fim, []
+    )
+    query_entregas += " ORDER BY ent.id DESC LIMIT 100"
+    cursor.execute(query_entregas, params_entregas)
     entregas = cursor.fetchall()
+
+    query_reparos_recebidos = """
+        SELECT
+            rr.id,
+            c.nome AS categoria,
+            m.nome AS marca,
+            rr.origem_loja,
+            rr.regional_reparo,
+            rr.quantidade,
+            rr.observacao,
+            rr.data_recebimento
+        FROM reparos_recebidos rr
+        JOIN categorias c ON rr.categoria_id = c.id
+        JOIN marcas m ON rr.marca_id = m.id
+    """
+    query_reparos_recebidos, params_rr = aplicar_filtro_datas(
+        query_reparos_recebidos, "rr.data_recebimento", data_inicio, data_fim, []
+    )
+    query_reparos_recebidos += " ORDER BY rr.id DESC LIMIT 100"
+    cursor.execute(query_reparos_recebidos, params_rr)
+    reparos_recebidos = cursor.fetchall()
+
+    query_reparos_saidas = """
+        SELECT
+            rs.id,
+            c.nome AS categoria,
+            m.nome AS marca,
+            rs.regional_reparo,
+            rs.destino_tipo,
+            rs.destino_nome,
+            rs.responsavel,
+            rs.quantidade,
+            rs.observacao,
+            rs.data_saida
+        FROM reparos_saidas rs
+        JOIN categorias c ON rs.categoria_id = c.id
+        JOIN marcas m ON rs.marca_id = m.id
+    """
+    query_reparos_saidas, params_rs = aplicar_filtro_datas(
+        query_reparos_saidas, "rs.data_saida", data_inicio, data_fim, []
+    )
+    query_reparos_saidas += " ORDER BY rs.id DESC LIMIT 100"
+    cursor.execute(query_reparos_saidas, params_rs)
+    reparos_saidas = cursor.fetchall()
 
     categoria_consulta = request.args.get("categoria_consulta", "").strip()
     resultado_consulta = None
@@ -313,6 +468,7 @@ def index():
             SELECT COALESCE(SUM(e.quantidade), 0) AS total
             FROM estoque e
             WHERE e.categoria_id = ?
+              AND e.quantidade > 0
         """, (categoria_consulta,))
         resultado_consulta = cursor.fetchone()["total"]
 
@@ -320,7 +476,7 @@ def index():
             SELECT e.unidade, SUM(e.quantidade) AS total
             FROM estoque e
             WHERE e.categoria_id = ?
-            AND e.quantidade > 0
+              AND e.quantidade > 0
             GROUP BY e.unidade
             HAVING SUM(e.quantidade) > 0
             ORDER BY e.unidade
@@ -332,13 +488,13 @@ def index():
             FROM estoque e
             JOIN marcas m ON e.marca_id = m.id
             WHERE e.categoria_id = ?
-            AND e.quantidade > 0
+              AND e.quantidade > 0
             GROUP BY m.id, m.nome
             HAVING SUM(e.quantidade) > 0
             ORDER BY total DESC, m.nome
         """, (categoria_consulta,))
         resultado_por_marca = cursor.fetchall()
-        
+
         cursor.execute("""
             SELECT
                 m.nome AS marca,
@@ -347,7 +503,9 @@ def index():
             FROM estoque e
             JOIN marcas m ON e.marca_id = m.id
             WHERE e.categoria_id = ?
+              AND e.quantidade > 0
             GROUP BY m.id, m.nome, e.unidade
+            HAVING SUM(e.quantidade) > 0
             ORDER BY m.nome, e.unidade
         """, (categoria_consulta,))
         resultado_marca_unidade = cursor.fetchall()
@@ -408,9 +566,12 @@ def index():
         "index.html",
         categorias=categorias,
         estoque=estoque,
+        estoque_reparos=estoque_reparos,
         entradas_estoque=entradas_estoque,
         movimentacoes=movimentacoes,
         entregas=entregas,
+        reparos_recebidos=reparos_recebidos,
+        reparos_saidas=reparos_saidas,
         origens=ORIGENS,
         destinos_internos=DESTINOS_INTERNOS,
         lojas=LOJAS,
@@ -425,7 +586,9 @@ def index():
         total_baixo=total_baixo,
         resumo_categorias=resumo_categorias,
         resumo_regionais=resumo_regionais,
-        estoque_baixo=estoque_baixo
+        estoque_baixo=estoque_baixo,
+        data_inicio=data_inicio,
+        data_fim=data_fim
     )
 
 
@@ -456,6 +619,7 @@ def cadastrar_categoria():
     nome = request.form.get("nome_categoria", "").strip()
 
     if not nome:
+        flash("Informe o nome da categoria.", "erro")
         return redirect(url_for("index"))
 
     conn = conectar()
@@ -464,6 +628,7 @@ def cadastrar_categoria():
     conn.commit()
     conn.close()
 
+    flash("Categoria cadastrada com sucesso.", "sucesso")
     return redirect(url_for("index"))
 
 
@@ -473,6 +638,7 @@ def cadastrar_marca():
     categoria_id = request.form.get("categoria_id_marca")
 
     if not nome or not categoria_id:
+        flash("Preencha categoria e marca.", "erro")
         return redirect(url_for("index"))
 
     conn = conectar()
@@ -484,6 +650,7 @@ def cadastrar_marca():
     conn.commit()
     conn.close()
 
+    flash("Marca cadastrada com sucesso.", "sucesso")
     return redirect(url_for("index"))
 
 
@@ -492,20 +659,16 @@ def adicionar_estoque():
     categoria_id = request.form.get("categoria_id")
     marca_id = request.form.get("marca_id")
     unidade = request.form.get("unidade")
-    quantidade = request.form.get("quantidade")
-    valor_total_compra = request.form.get("valor_total_compra")
+    quantidade = obter_int(request.form.get("quantidade"))
+    valor_total_compra = obter_float(request.form.get("valor_total_compra"))
     observacao = request.form.get("observacao", "").strip()
 
-    if not all([categoria_id, marca_id, unidade, quantidade, valor_total_compra]):
-        return redirect(url_for("index"))
-
-    try:
-        quantidade = int(quantidade)
-        valor_total_compra = float(valor_total_compra)
-    except ValueError:
+    if not all([categoria_id, marca_id, unidade]) or quantidade is None or valor_total_compra is None:
+        flash("Preencha todos os campos da entrada de estoque.", "erro")
         return redirect(url_for("index"))
 
     if quantidade <= 0 or valor_total_compra < 0:
+        flash("Quantidade e valor precisam ser válidos.", "erro")
         return redirect(url_for("index"))
 
     valor_unitario = valor_total_compra / quantidade
@@ -518,7 +681,6 @@ def adicionar_estoque():
         FROM estoque
         WHERE categoria_id = ? AND marca_id = ? AND unidade = ?
     """, (categoria_id, marca_id, unidade))
-
     item = cursor.fetchone()
 
     if item:
@@ -553,6 +715,7 @@ def adicionar_estoque():
     conn.commit()
     conn.close()
 
+    flash("Entrada de estoque registrada com sucesso.", "sucesso")
     return redirect(url_for("index"))
 
 
@@ -564,7 +727,8 @@ def transferir():
     tipo_destino = request.form.get("tipo_destino")
     destino_interno = request.form.get("destino_interno")
     destino_loja = request.form.get("destino_loja")
-    quantidade = request.form.get("quantidade")
+    quantidade = obter_int(request.form.get("quantidade"))
+    observacao = request.form.get("observacao_transferencia", "").strip()
 
     if tipo_destino == "interno":
         destino = destino_interno
@@ -573,18 +737,16 @@ def transferir():
     else:
         destino = None
 
-    if not all([categoria_id, marca_id, origem, destino, quantidade]):
+    if not all([categoria_id, marca_id, origem, destino]) or quantidade is None:
+        flash("Preencha todos os campos da transferência.", "erro")
         return redirect(url_for("index"))
 
     if origem == destino:
-        return redirect(url_for("index"))
-
-    try:
-        quantidade = int(quantidade)
-    except ValueError:
+        flash("Origem e destino não podem ser iguais.", "erro")
         return redirect(url_for("index"))
 
     if quantidade <= 0:
+        flash("A quantidade da transferência precisa ser maior que zero.", "erro")
         return redirect(url_for("index"))
 
     conn = conectar()
@@ -595,26 +757,34 @@ def transferir():
         FROM estoque
         WHERE categoria_id = ? AND marca_id = ? AND unidade = ?
     """, (categoria_id, marca_id, origem))
-
     estoque_origem = cursor.fetchone()
 
-    if not estoque_origem or estoque_origem["quantidade"] < quantidade:
+    if not estoque_origem:
         conn.close()
+        flash("Item não encontrado no estoque de origem.", "erro")
+        return redirect(url_for("index"))
+
+    if estoque_origem["quantidade"] < quantidade:
+        conn.close()
+        flash("Não é possível transferir uma quantidade maior do que o estoque disponível.", "erro")
         return redirect(url_for("index"))
 
     nova_qtd_origem = estoque_origem["quantidade"] - quantidade
-    cursor.execute("""
-        UPDATE estoque
-        SET quantidade = ?
-        WHERE id = ?
-    """, (nova_qtd_origem, estoque_origem["id"]))
+
+    if nova_qtd_origem == 0:
+        cursor.execute("DELETE FROM estoque WHERE id = ?", (estoque_origem["id"],))
+    else:
+        cursor.execute("""
+            UPDATE estoque
+            SET quantidade = ?
+            WHERE id = ?
+        """, (nova_qtd_origem, estoque_origem["id"]))
 
     cursor.execute("""
         SELECT id, quantidade
         FROM estoque
         WHERE categoria_id = ? AND marca_id = ? AND unidade = ?
     """, (categoria_id, marca_id, destino))
-
     estoque_destino = cursor.fetchone()
 
     if estoque_destino:
@@ -632,14 +802,15 @@ def transferir():
 
     cursor.execute("""
         INSERT INTO movimentacoes (
-            categoria_id, marca_id, origem, destino, tipo_destino, quantidade
+            categoria_id, marca_id, origem, destino, tipo_destino, quantidade, observacao
         )
-        VALUES (?, ?, ?, ?, ?, ?)
-    """, (categoria_id, marca_id, origem, destino, tipo_destino, quantidade))
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+    """, (categoria_id, marca_id, origem, destino, tipo_destino, quantidade, observacao))
 
     conn.commit()
     conn.close()
 
+    flash("Transferência registrada com sucesso.", "sucesso")
     return redirect(url_for("index"))
 
 
@@ -648,19 +819,17 @@ def entregar():
     categoria_id = request.form.get("categoria_id")
     marca_id = request.form.get("marca_id")
     unidade = request.form.get("unidade")
-    quantidade = request.form.get("quantidade")
+    quantidade = obter_int(request.form.get("quantidade"))
     responsavel = request.form.get("responsavel", "").strip()
     setor = request.form.get("setor", "").strip()
+    observacao = request.form.get("observacao_entrega", "").strip()
 
-    if not all([categoria_id, marca_id, unidade, quantidade, responsavel, setor]):
-        return redirect(url_for("index"))
-
-    try:
-        quantidade = int(quantidade)
-    except ValueError:
+    if not all([categoria_id, marca_id, unidade, responsavel, setor]) or quantidade is None:
+        flash("Preencha todos os campos da entrega.", "erro")
         return redirect(url_for("index"))
 
     if quantidade <= 0:
+        flash("A quantidade da entrega precisa ser maior que zero.", "erro")
         return redirect(url_for("index"))
 
     conn = conectar()
@@ -671,54 +840,56 @@ def entregar():
         FROM estoque
         WHERE categoria_id = ? AND marca_id = ? AND unidade = ?
     """, (categoria_id, marca_id, unidade))
-
     item = cursor.fetchone()
 
-    if not item or item["quantidade"] < quantidade:
+    if not item:
         conn.close()
+        flash("Item não encontrado na unidade informada.", "erro")
+        return redirect(url_for("index"))
+
+    if item["quantidade"] < quantidade:
+        conn.close()
+        flash("Não é possível entregar uma quantidade maior do que o estoque disponível.", "erro")
         return redirect(url_for("index"))
 
     nova_quantidade = item["quantidade"] - quantidade
 
-    cursor.execute("""
-        UPDATE estoque
-        SET quantidade = ?
-        WHERE id = ?
-    """, (nova_quantidade, item["id"]))
+    if nova_quantidade == 0:
+        cursor.execute("DELETE FROM estoque WHERE id = ?", (item["id"],))
+    else:
+        cursor.execute("""
+            UPDATE estoque
+            SET quantidade = ?
+            WHERE id = ?
+        """, (nova_quantidade, item["id"]))
 
     cursor.execute("""
         INSERT INTO entregas (
-            categoria_id, marca_id, unidade, quantidade, responsavel, setor
+            categoria_id, marca_id, unidade, quantidade, responsavel, setor, observacao
         )
-        VALUES (?, ?, ?, ?, ?, ?)
-    """, (categoria_id, marca_id, unidade, quantidade, responsavel, setor))
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+    """, (categoria_id, marca_id, unidade, quantidade, responsavel, setor, observacao))
 
     conn.commit()
     conn.close()
 
+    flash("Entrega registrada com sucesso.", "sucesso")
     return redirect(url_for("index"))
 
 
 @app.route("/dar_baixa_loja/<int:item_id>", methods=["POST"])
 def dar_baixa_loja(item_id):
-    quantidade_baixa = request.form.get("quantidade_baixa")
+    quantidade_baixa = obter_int(request.form.get("quantidade_baixa"))
 
-    if not quantidade_baixa:
-        return redirect(url_for("index"))
-
-    try:
-        quantidade_baixa = int(quantidade_baixa)
-    except ValueError:
-        return redirect(url_for("index"))
-
-    if quantidade_baixa <= 0:
+    if quantidade_baixa is None or quantidade_baixa <= 0:
+        flash("Informe uma quantidade válida para a baixa.", "erro")
         return redirect(url_for("index"))
 
     conn = conectar()
     cursor = conn.cursor()
 
     cursor.execute("""
-        SELECT id, quantidade, unidade
+        SELECT id, quantidade
         FROM estoque
         WHERE id = ?
     """, (item_id,))
@@ -726,23 +897,151 @@ def dar_baixa_loja(item_id):
 
     if not item:
         conn.close()
+        flash("Item não encontrado para baixa.", "erro")
         return redirect(url_for("index"))
 
     if item["quantidade"] < quantidade_baixa:
         conn.close()
+        flash("Não é possível dar baixa maior do que o estoque disponível.", "erro")
         return redirect(url_for("index"))
 
     nova_quantidade = item["quantidade"] - quantidade_baixa
 
-    cursor.execute("""
-        UPDATE estoque
-        SET quantidade = ?
-        WHERE id = ?
-    """, (nova_quantidade, item_id))
+    if nova_quantidade == 0:
+        cursor.execute("DELETE FROM estoque WHERE id = ?", (item_id,))
+    else:
+        cursor.execute("""
+            UPDATE estoque
+            SET quantidade = ?
+            WHERE id = ?
+        """, (nova_quantidade, item_id))
 
     conn.commit()
     conn.close()
 
+    flash("Baixa realizada com sucesso.", "sucesso")
+    return redirect(url_for("index"))
+
+
+@app.route("/receber_reparo", methods=["POST"])
+def receber_reparo():
+    categoria_id = request.form.get("categoria_id")
+    marca_id = request.form.get("marca_id")
+    origem_loja = request.form.get("origem_loja", "").strip()
+    regional_reparo = request.form.get("regional_reparo")
+    quantidade = obter_int(request.form.get("quantidade"))
+    observacao = request.form.get("observacao", "").strip()
+
+    if not all([categoria_id, marca_id, origem_loja, regional_reparo]) or quantidade is None:
+        flash("Preencha todos os campos do recebimento para reparo.", "erro")
+        return redirect(url_for("index"))
+
+    if quantidade <= 0:
+        flash("A quantidade do reparo precisa ser maior que zero.", "erro")
+        return redirect(url_for("index"))
+
+    conn = conectar()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT id, quantidade
+        FROM estoque_reparos
+        WHERE categoria_id = ? AND marca_id = ? AND regional_reparo = ?
+    """, (categoria_id, marca_id, regional_reparo))
+    item = cursor.fetchone()
+
+    if item:
+        nova_quantidade = item["quantidade"] + quantidade
+        cursor.execute("""
+            UPDATE estoque_reparos
+            SET quantidade = ?
+            WHERE id = ?
+        """, (nova_quantidade, item["id"]))
+    else:
+        cursor.execute("""
+            INSERT INTO estoque_reparos (categoria_id, marca_id, regional_reparo, quantidade)
+            VALUES (?, ?, ?, ?)
+        """, (categoria_id, marca_id, regional_reparo, quantidade))
+
+    cursor.execute("""
+        INSERT INTO reparos_recebidos (
+            categoria_id, marca_id, origem_loja, regional_reparo, quantidade, observacao
+        )
+        VALUES (?, ?, ?, ?, ?, ?)
+    """, (categoria_id, marca_id, origem_loja, regional_reparo, quantidade, observacao))
+
+    conn.commit()
+    conn.close()
+
+    flash("Recebimento para reparo registrado com sucesso.", "sucesso")
+    return redirect(url_for("index"))
+
+
+@app.route("/saida_reparo", methods=["POST"])
+def saida_reparo():
+    categoria_id = request.form.get("categoria_id")
+    marca_id = request.form.get("marca_id")
+    regional_reparo = request.form.get("regional_reparo")
+    destino_tipo = request.form.get("destino_tipo")
+    destino_nome = request.form.get("destino_nome", "").strip()
+    responsavel = request.form.get("responsavel", "").strip()
+    quantidade = obter_int(request.form.get("quantidade"))
+    observacao = request.form.get("observacao", "").strip()
+
+    if not all([categoria_id, marca_id, regional_reparo, destino_tipo, destino_nome]) or quantidade is None:
+        flash("Preencha todos os campos da saída do reparo.", "erro")
+        return redirect(url_for("index"))
+
+    if quantidade <= 0:
+        flash("A quantidade da saída do reparo precisa ser maior que zero.", "erro")
+        return redirect(url_for("index"))
+
+    conn = conectar()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT id, quantidade
+        FROM estoque_reparos
+        WHERE categoria_id = ? AND marca_id = ? AND regional_reparo = ?
+    """, (categoria_id, marca_id, regional_reparo))
+    item = cursor.fetchone()
+
+    if not item:
+        conn.close()
+        flash("Item não encontrado no estoque de reparos.", "erro")
+        return redirect(url_for("index"))
+
+    if item["quantidade"] < quantidade:
+        conn.close()
+        flash("Não é possível dar saída maior do que o estoque de reparos disponível.", "erro")
+        return redirect(url_for("index"))
+
+    nova_quantidade = item["quantidade"] - quantidade
+
+    if nova_quantidade == 0:
+        cursor.execute("DELETE FROM estoque_reparos WHERE id = ?", (item["id"],))
+    else:
+        cursor.execute("""
+            UPDATE estoque_reparos
+            SET quantidade = ?
+            WHERE id = ?
+        """, (nova_quantidade, item["id"]))
+
+    cursor.execute("""
+        INSERT INTO reparos_saidas (
+            categoria_id, marca_id, regional_reparo, destino_tipo,
+            destino_nome, responsavel, quantidade, observacao
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    """, (
+        categoria_id, marca_id, regional_reparo, destino_tipo,
+        destino_nome, responsavel, quantidade, observacao
+    ))
+
+    conn.commit()
+    conn.close()
+
+    flash("Saída do reparo registrada com sucesso.", "sucesso")
     return redirect(url_for("index"))
 
 

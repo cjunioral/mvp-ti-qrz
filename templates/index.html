@@ -15,9 +15,14 @@
             --primary-dark: #b80510;
             --dark: #111111;
             --dark-2: #1f1f1f;
+            --gray-1: #f8f8f8;
             --gray-2: #e5e7eb;
             --gray-3: #6b7280;
             --white: #ffffff;
+            --success-bg: #ecfdf5;
+            --success-border: #10b981;
+            --error-bg: #fef2f2;
+            --error-border: #ef4444;
             --shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
             --radius: 18px;
         }
@@ -36,7 +41,7 @@
 
         .container {
             width: 92%;
-            max-width: 1480px;
+            max-width: 1500px;
             margin: 28px auto 40px;
         }
 
@@ -45,9 +50,9 @@
             overflow: hidden;
             border-radius: 28px;
             background:
-                linear-gradient(120deg, rgba(17,17,17,0.88), rgba(33, 31, 31, 0.72)),
+                linear-gradient(120deg, rgba(17,17,17,0.88), rgba(33,31,31,0.72)),
                 url('/static/banner_qrz.png') center/cover no-repeat;
-            min-height: 350px;
+            min-height: 320px;
             padding: 36px;
             display: flex;
             align-items: end;
@@ -83,6 +88,33 @@
             color: rgba(255,255,255,0.9);
         }
 
+        .alerts {
+            margin-bottom: 18px;
+            display: grid;
+            gap: 10px;
+        }
+
+        .alert {
+            padding: 14px 16px;
+            border-radius: 14px;
+            font-weight: 600;
+            border: 1px solid transparent;
+            box-shadow: var(--shadow);
+            background: white;
+        }
+
+        .alert.success {
+            background: var(--success-bg);
+            border-color: var(--success-border);
+            color: #065f46;
+        }
+
+        .alert.error {
+            background: var(--error-bg);
+            border-color: var(--error-border);
+            color: #991b1b;
+        }
+
         .stats {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -108,7 +140,7 @@
 
         .stat-card strong {
             font-family: 'Poppins', sans-serif;
-            font-size: 26px;
+            font-size: 28px;
             color: var(--dark);
         }
 
@@ -117,6 +149,38 @@
             grid-template-columns: 1.2fr 1fr 1fr;
             gap: 20px;
             margin-bottom: 24px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 24px;
+        }
+
+        .tab-btn {
+            border: none;
+            background: white;
+            color: var(--dark);
+            padding: 12px 18px;
+            border-radius: 12px;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: var(--shadow);
+        }
+
+        .tab-btn.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .tab-pane {
+            display: none;
+        }
+
+        .tab-pane.active {
+            display: block;
         }
 
         .table-card {
@@ -185,52 +249,13 @@
             font-weight: 800;
         }
 
-        .collapsible {
-            background: var(--white);
-            border-radius: 18px;
-            box-shadow: var(--shadow);
-            margin-bottom: 18px;
-            overflow: hidden;
-            border: 1px solid rgba(0,0,0,0.05);
-        }
-
-        .collapsible summary {
-            list-style: none;
-            cursor: pointer;
-            padding: 18px 22px;
-            font-family: 'Poppins', sans-serif;
-            font-size: 18px;
-            font-weight: 700;
-            color: var(--dark);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            background: #ffffff;
-        }
-
-        .collapsible summary::-webkit-details-marker {
-            display: none;
-        }
-
-        .arrow {
-            font-size: 14px;
-            color: var(--primary);
-            transition: transform 0.2s ease;
-        }
-
-        .collapsible[open] .arrow {
-            transform: rotate(90deg);
-        }
-
-        .collapsible-content {
-            padding: 0 22px 22px 22px;
-        }
-
         .card {
             background: white;
             border-radius: 16px;
             padding: 22px;
             border: 1px solid rgba(0,0,0,0.04);
+            box-shadow: var(--shadow);
+            margin-bottom: 20px;
         }
 
         .card h2 {
@@ -245,6 +270,12 @@
             gap: 20px;
         }
 
+        .grid-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+        }
+
         label {
             display: block;
             margin-bottom: 7px;
@@ -253,10 +284,10 @@
             color: #222;
         }
 
-        input, select {
+        input, select, textarea {
             width: 100%;
-            height: 46px;
-            padding: 0 14px;
+            min-height: 46px;
+            padding: 10px 14px;
             margin-bottom: 16px;
             border: 1px solid #d1d5db;
             border-radius: 12px;
@@ -266,7 +297,12 @@
             background: #fff;
         }
 
-        input:focus, select:focus {
+        textarea {
+            min-height: 90px;
+            resize: vertical;
+        }
+
+        input:focus, select:focus, textarea:focus {
             border-color: var(--primary);
             box-shadow: 0 0 0 4px rgba(227, 6, 19, 0.10);
         }
@@ -333,18 +369,32 @@
             font-size: 13px;
         }
 
+        .report-filter {
+            display: grid;
+            grid-template-columns: 1fr 1fr auto;
+            gap: 12px;
+            align-items: end;
+            margin-bottom: 18px;
+        }
+
+        .small-btn {
+            width: auto;
+            padding: 0 14px;
+            height: 40px;
+        }
+
         @media (max-width: 1250px) {
             .stats {
                 grid-template-columns: repeat(2, 1fr);
             }
 
-            .bi-grid {
+            .bi-grid, .grid-3 {
                 grid-template-columns: 1fr;
             }
         }
 
         @media (max-width: 900px) {
-            .grid-2 {
+            .grid-2, .report-filter {
                 grid-template-columns: 1fr;
             }
         }
@@ -385,12 +435,42 @@
             blocoInterno.style.display = "none";
             blocoLoja.style.display = "none";
 
-            if (tipo === "interno") {
-                blocoInterno.style.display = "block";
-            } else if (tipo === "loja") {
-                blocoLoja.style.display = "block";
-            }
+            if (tipo === "interno") blocoInterno.style.display = "block";
+            if (tipo === "loja") blocoLoja.style.display = "block";
         }
+
+        function abrirAba(nome) {
+            localStorage.setItem("abaAtivaEstoque", nome);
+
+            document.querySelectorAll(".tab-btn").forEach(btn => btn.classList.remove("active"));
+            document.querySelectorAll(".tab-pane").forEach(tab => tab.classList.remove("active"));
+
+            document.getElementById("btn-" + nome).classList.add("active");
+            document.getElementById("tab-" + nome).classList.add("active");
+        }
+
+        window.addEventListener("load", function () {
+            const abaSalva = localStorage.getItem("abaAtivaEstoque") || "cadastro";
+            if (document.getElementById("btn-" + abaSalva) && document.getElementById("tab-" + abaSalva)) {
+                abrirAba(abaSalva);
+            } else {
+                abrirAba("cadastro");
+            }
+        });
+
+        document.addEventListener("submit", function () {
+            sessionStorage.setItem("scrollY", window.scrollY);
+        });
+
+        window.addEventListener("load", function () {
+            const scrollY = sessionStorage.getItem("scrollY");
+            if (scrollY !== null) {
+                setTimeout(() => {
+                    window.scrollTo(0, parseInt(scrollY));
+                }, 50);
+                sessionStorage.removeItem("scrollY");
+            }
+        });
     </script>
 </head>
 <body>
@@ -400,26 +480,35 @@
             <div class="hero-content">
                 <div class="hero-badge">Grupo Queiroz • Controle Interno</div>
                 <h1>Controle de Estoque do Setor - TI QRZ</h1>
-                <p>Sistema para controle de estoque interno.</p>
+                <p>Sistema para controle de estoque interno, reparos e relatórios.</p>
             </div>
         </section>
+
+        {% with mensagens = get_flashed_messages(with_categories=true) %}
+            {% if mensagens %}
+            <div class="alerts">
+                {% for categoria, mensagem in mensagens %}
+                    <div class="alert {% if categoria == 'sucesso' %}success{% else %}error{% endif %}">
+                        {{ mensagem }}
+                    </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        {% endwith %}
 
         <section class="stats">
             <div class="stat-card">
                 <span>Registros no estoque</span>
                 <strong>{{ total_registros or 0 }}</strong>
             </div>
-
             <div class="stat-card">
                 <span>Total de unidades</span>
                 <strong>{{ total_unidades or 0 }}</strong>
             </div>
-
             <div class="stat-card">
                 <span>Total de compras registradas</span>
                 <strong>R$ {{ '%.2f'|format(total_compras or 0) }}</strong>
             </div>
-
             <div class="stat-card">
                 <span>Itens com estoque baixo</span>
                 <strong>{{ total_baixo or 0 }}</strong>
@@ -462,12 +551,8 @@
                 <div class="mini-list">
                     {% for item in resumo_categorias %}
                     <div class="mini-item">
-                        <div>
-                            <strong>{{ item['categoria'] }}</strong>
-                        </div>
-                        <div>
-                            <span {% if item['total'] <= 3 %}class="low-stock"{% endif %}>{{ item['total'] }}</span>
-                        </div>
+                        <div><strong>{{ item['categoria'] }}</strong></div>
+                        <div><span {% if item['total'] <= 3 and item['total'] > 0 %}class="low-stock"{% endif %}>{{ item['total'] }}</span></div>
                     </div>
                     {% endfor %}
                 </div>
@@ -478,35 +563,35 @@
                 <div class="mini-list">
                     {% for item in resumo_regionais %}
                     <div class="mini-item">
-                        <div>
-                            <strong>{{ item['unidade'] }}</strong>
-                        </div>
-                        <div>
-                            <span {% if item['total'] <= 3 %}class="low-stock"{% endif %}>{{ item['total'] }}</span>
-                        </div>
+                        <div><strong>{{ item['unidade'] }}</strong></div>
+                        <div><span {% if item['total'] <= 3 and item['total'] > 0 %}class="low-stock"{% endif %}>{{ item['total'] }}</span></div>
                     </div>
                     {% endfor %}
                 </div>
             </div>
         </section>
 
-        <details class="collapsible">
-            <summary><span class="arrow">▶</span> Cadastrar categoria</summary>
-            <div class="collapsible-content">
+        <div class="tabs">
+            <button id="btn-cadastro" class="tab-btn" type="button" onclick="abrirAba('cadastro')">Cadastro / Entrada de estoque</button>
+            <button id="btn-transferencias" class="tab-btn" type="button" onclick="abrirAba('transferencias')">Transferências e saídas</button>
+            <button id="btn-reparos" class="tab-btn" type="button" onclick="abrirAba('reparos')">Reparos / Estoque de reparos</button>
+            <button id="btn-estoque" class="tab-btn" type="button" onclick="abrirAba('estoque')">Estoques</button>
+            <button id="btn-relatorios" class="tab-btn" type="button" onclick="abrirAba('relatorios')">Relatórios</button>
+        </div>
+
+        <div id="tab-cadastro" class="tab-pane">
+            <div class="grid-3">
                 <div class="card">
+                    <h2>Cadastrar categoria</h2>
                     <form method="POST" action="/cadastrar_categoria">
                         <label>Nome da categoria</label>
                         <input type="text" name="nome_categoria" placeholder="Ex: Teclado" required>
                         <button type="submit" class="btn">Cadastrar categoria</button>
                     </form>
                 </div>
-            </div>
-        </details>
 
-        <details class="collapsible">
-            <summary><span class="arrow">▶</span> Cadastrar marca</summary>
-            <div class="collapsible-content">
                 <div class="card">
+                    <h2>Cadastrar marca</h2>
                     <form method="POST" action="/cadastrar_marca">
                         <label>Categoria</label>
                         <select name="categoria_id_marca" required>
@@ -518,17 +603,12 @@
 
                         <label>Nome da marca</label>
                         <input type="text" name="nome_marca" placeholder="Ex: Logitech" required>
-
                         <button type="submit" class="btn">Cadastrar marca</button>
                     </form>
                 </div>
-            </div>
-        </details>
 
-        <details class="collapsible" open>
-            <summary><span class="arrow">▶</span> Cadastrar produto / entrada de estoque</summary>
-            <div class="collapsible-content">
                 <div class="card">
+                    <h2>Entrada de estoque</h2>
                     <form method="POST" action="/adicionar_estoque">
                         <label>Categoria</label>
                         <select name="categoria_id" id="categoria_add" onchange="carregarMarcas('categoria_add', 'marca_add')" required>
@@ -558,18 +638,18 @@
                         <input type="number" step="0.01" name="valor_total_compra" placeholder="Ex: 1500.00" required>
 
                         <label>Observação</label>
-                        <input type="text" name="observacao" placeholder="Ex: compra de março / Miranda">
+                        <textarea name="observacao" placeholder="Ex: compra de março / Miranda"></textarea>
 
-                        <button type="submit" class="btn">Adicionar estoque</button>
+                        <button type="submit" class="btn">Registrar entrada</button>
                     </form>
                 </div>
             </div>
-        </details>
+        </div>
 
-        <details class="collapsible">
-            <summary><span class="arrow">▶</span> Transferir entre unidades / lojas</summary>
-            <div class="collapsible-content">
+        <div id="tab-transferencias" class="tab-pane">
+            <div class="grid-2">
                 <div class="card">
+                    <h2>Transferir entre unidades / lojas</h2>
                     <form method="POST" action="/transferir">
                         <label>Categoria</label>
                         <select name="categoria_id" id="categoria_transf" onchange="carregarMarcas('categoria_transf', 'marca_transf')" required>
@@ -622,16 +702,15 @@
                         <label>Quantidade</label>
                         <input type="number" name="quantidade" min="1" required>
 
-                        <button type="submit" class="btn">Transferir estoque</button>
+                        <label>Observação</label>
+                        <textarea name="observacao_transferencia" placeholder="Ex: envio para substituição"></textarea>
+
+                        <button type="submit" class="btn">Registrar transferência</button>
                     </form>
                 </div>
-            </div>
-        </details>
 
-        <details class="collapsible">
-            <summary><span class="arrow">▶</span> Entregar item</summary>
-            <div class="collapsible-content">
                 <div class="card">
+                    <h2>Entrega de item</h2>
                     <form method="POST" action="/entregar">
                         <label>Categoria</label>
                         <select name="categoria_id" id="categoria_entrega" onchange="carregarMarcas('categoria_entrega', 'marca_entrega')" required>
@@ -658,389 +737,621 @@
                         <input type="number" name="quantidade" min="1" required>
 
                         <label>Responsável</label>
-                        <input type="text" name="responsavel" placeholder="Nome do Entregador" required>
+                        <input type="text" name="responsavel" placeholder="Nome do entregador" required>
 
-                        <label>Nome do Recebedor / Setor</label>
-                        <input type="text" name="setor" placeholder="Ex: Cicero, Financeiro / Cicero, Central de Notas" required>
+                        <label>Nome do recebedor / setor</label>
+                        <input type="text" name="setor" placeholder="Ex: Cícero, Financeiro" required>
+
+                        <label>Observação</label>
+                        <textarea name="observacao_entrega" placeholder="Ex: entrega para substituição"></textarea>
 
                         <button type="submit" class="btn">Registrar entrega</button>
                     </form>
                 </div>
             </div>
-        </details>
+        </div>
 
-        <details class="collapsible">
-            <summary><span class="arrow">▶</span> Ver estoque</summary>
-            <div class="collapsible-content">
-                <div class="table-card" style="box-shadow:none; padding:0; margin:0;">
-                    <div class="table-wrapper">
-                        {% if estoque %}
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Categoria</th>
-                                    <th>Marca</th>
-                                    <th>Unidade</th>
-                                    <th>Quantidade</th>
-                                    <th>Baixa</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for item in estoque %}
-                                <tr>
-                                    <td>{{ item['categoria'] }}</td>
-                                    <td>{{ item['marca'] }}</td>
-                                    <td>{{ item['unidade'] }}</td>
-                                    <td {% if item['quantidade'] <= 3 %}class="low-stock"{% endif %}>{{ item['quantidade'] }}</td>
-                                    <td>
-                                        {% if item['unidade'] not in ['Natal', 'Mossoró', 'Paraíba'] %}
-                                        <form method="POST" action="/dar_baixa_loja/{{ item['id'] }}" style="display:flex; gap:8px; align-items:center;">
-                                            <input
-                                                type="number"
-                                                name="quantidade_baixa"
-                                                min="1"
-                                                max="{{ item['quantidade'] }}"
-                                                placeholder="Qtd"
-                                                style="width:90px; margin-bottom:0;"
-                                                required
-                                            >
-                                            <button type="submit" class="btn" style="width:auto; padding:0 14px; height:40px;">
-                                                Dar baixa
-                                            </button>
-                                        </form>
-                                        {% else %}
-                                        <span style="color:#9ca3af;">—</span>
-                                        {% endif %}
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                        {% else %}
-                        <div class="empty">Nenhum item cadastrado no estoque.</div>
-                        {% endif %}
+        <div id="tab-reparos" class="tab-pane">
+            <div class="card">
+                <h2>Recebimento para reparo</h2>
+
+                <form method="POST" action="/receber_reparo">
+                    <label>Categoria</label>
+                    <select name="categoria_id" id="categoria_reparo" onchange="carregarMarcas('categoria_reparo','marca_reparo')" required>
+                        <option value="">Selecione a categoria</option>
+                        {% for categoria in categorias %}
+                            <option value="{{ categoria['id'] }}">{{ categoria['nome'] }}</option>
+                        {% endfor %}
+                    </select>
+
+                    <label>Marca</label>
+                    <select name="marca_id" id="marca_reparo" required>
+                        <option value="">Selecione a marca</option>
+                    </select>
+
+                    <label>Loja / origem do item</label>
+                    <select name="origem_loja" required>
+                        <option value="">Selecione a loja</option>
+                        {% for loja in lojas %}
+                            <option value="{{ loja }}">{{ loja }}</option>
+                        {% endfor %}
+                    </select>
+
+                    <label>Regional que vai receber o reparo</label>
+                    <select name="regional_reparo" required>
+                        <option value="">Selecione a regional</option>
+                        {% for origem in origens %}
+                            <option value="{{ origem }}">{{ origem }}</option>
+                        {% endfor %}
+                    </select>
+
+                    <label>Quantidade</label>
+                    <input type="number" name="quantidade" min="1" required>
+
+                    <label>Observação / motivo</label>
+                    <textarea name="observacao" placeholder="Ex: impressora com falha na impressão"></textarea>
+
+                    <button type="submit" class="btn">Registrar recebimento</button>
+                </form>
+            </div>
+
+            <div class="card">
+                <h2>Saída do reparo</h2>
+
+                <form method="POST" action="/saida_reparo" onsubmit="prepararDestinoReparo()">
+                    <label>Categoria</label>
+                    <select name="categoria_id" id="categoria_saida_reparo" onchange="carregarMarcas('categoria_saida_reparo','marca_saida_reparo')" required>
+                        <option value="">Selecione a categoria</option>
+                        {% for categoria in categorias %}
+                            <option value="{{ categoria['id'] }}">{{ categoria['nome'] }}</option>
+                        {% endfor %}
+                    </select>
+
+                    <label>Marca</label>
+                    <select name="marca_id" id="marca_saida_reparo" required>
+                        <option value="">Selecione a marca</option>
+                    </select>
+
+                    <label>Regional do reparo</label>
+                    <select name="regional_reparo" required>
+                        <option value="">Selecione a regional</option>
+                        {% for origem in origens %}
+                            <option value="{{ origem }}">{{ origem }}</option>
+                        {% endfor %}
+                    </select>
+
+                    <label>Tipo de destino</label>
+                    <select name="destino_tipo" id="destino_tipo" onchange="alternarDestinoReparo()" required>
+                        <option value="">Selecione</option>
+                        <option value="loja">Loja</option>
+                        <option value="regional">Regional</option>
+                        <option value="cd">CD</option>
+                        <option value="funcionario">Funcionário</option>
+                    </select>
+
+                    <div id="bloco_destino_reparo_loja" style="display:none;">
+                        <label>Loja de destino</label>
+                        <select id="destino_loja_select">
+                            <option value="">Selecione a loja</option>
+                            {% for loja in lojas %}
+                                <option value="{{ loja }}">{{ loja }}</option>
+                            {% endfor %}
+                        </select>
                     </div>
+
+                    <div id="bloco_destino_reparo_regional" style="display:none;">
+                        <label>Regional de destino</label>
+                        <select id="destino_regional_select">
+                            <option value="">Selecione a regional</option>
+                            {% for origem in origens %}
+                                <option value="{{ origem }}">{{ origem }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div id="bloco_destino_reparo_funcionario" style="display:none;">
+                        <label>Funcionário / destino</label>
+                        <input type="text" id="destino_funcionario_input" placeholder="Ex: Cícero do TI">
+                    </div>
+
+                    <input type="hidden" name="destino_nome" id="destino_nome_hidden">
+
+                    <label>Quem pegou / responsável</label>
+                    <input type="text" name="responsavel" placeholder="Ex: Cícero do TI">
+
+                    <label>Quantidade</label>
+                    <input type="number" name="quantidade" min="1" required>
+
+                    <label>Observação</label>
+                    <textarea name="observacao" placeholder="Ex: enviado por funcionário que viajou para a loja"></textarea>
+
+                    <button type="submit" class="btn">
+                        Registrar saída do reparo
+                    </button>
+                </form>
+            </div>
+
+            <div class="table-card">
+                <h2 class="table-title">Estoque de reparos</h2>
+                <div class="table-wrapper">
+                    {% if estoque_reparos %}
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Categoria</th>
+                                <th>Marca</th>
+                                <th>Regional do reparo</th>
+                                <th>Quantidade</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in estoque_reparos %}
+                            <tr>
+                                <td>{{ item['categoria'] }}</td>
+                                <td>{{ item['marca'] }}</td>
+                                <td>{{ item['regional_reparo'] }}</td>
+                                <td {% if item['quantidade'] <= 3 %}class="low-stock"{% endif %}>{{ item['quantidade'] }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <div class="empty">Nenhum item no estoque de reparos.</div>
+                    {% endif %}
                 </div>
             </div>
-        </details>
+        </div>
 
-        <details class="collapsible">
-            <summary><span class="arrow">▶</span> Entradas de estoque</summary>
-            <div class="collapsible-content">
-                <div class="table-card" style="box-shadow:none; padding:0; margin:0;">
+        <div id="tab-estoque" class="tab-pane">
+            <div class="table-card">
+                <h2 class="table-title">Estoque principal</h2>
+                <div class="table-wrapper">
+                    {% if estoque %}
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Categoria</th>
+                                <th>Marca</th>
+                                <th>Unidade</th>
+                                <th>Quantidade</th>
+                                <th>Baixa em loja</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in estoque %}
+                            <tr>
+                                <td>{{ item['categoria'] }}</td>
+                                <td>{{ item['marca'] }}</td>
+                                <td>{{ item['unidade'] }}</td>
+                                <td {% if item['quantidade'] <= 3 %}class="low-stock"{% endif %}>{{ item['quantidade'] }}</td>
+                                <td>
+                                    {% if item['unidade'] not in ['Natal', 'Mossoró', 'Paraíba'] %}
+                                    <form method="POST" action="/dar_baixa_loja/{{ item['id'] }}" style="display:flex; gap:8px; align-items:center;">
+                                        <input type="number" name="quantidade_baixa" min="1" max="{{ item['quantidade'] }}" placeholder="Qtd" style="width:90px; margin-bottom:0;" required>
+                                        <button type="submit" class="btn small-btn">Dar baixa</button>
+                                    </form>
+                                    {% else %}
+                                    <span style="color:#9ca3af;">—</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <div class="empty">Nenhum item cadastrado no estoque.</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div id="tab-relatorios" class="tab-pane">
+            <div class="card">
+                <h2>Filtro por período</h2>
+                <form method="GET" class="report-filter">
+                    <div>
+                        <label>Data inicial</label>
+                        <input type="date" name="data_inicio" value="{{ data_inicio }}">
+                    </div>
+                    <div>
+                        <label>Data final</label>
+                        <input type="date" name="data_fim" value="{{ data_fim }}">
+                    </div>
+                    <div>
+                        <button type="submit" class="btn">Filtrar relatórios</button>
+                    </div>
+
+                    {% if categoria_consulta %}
+                    <input type="hidden" name="categoria_consulta" value="{{ categoria_consulta }}">
+                    {% endif %}
+                </form>
+            </div>
+
+            <div class="grid-2">
+                <div class="card">
+                    <h2>Consultar por categoria</h2>
+
+                    <form method="GET">
+                        <label>Categoria</label>
+                        <select name="categoria_consulta" required>
+                            <option value="">Selecione a categoria</option>
+                            {% for categoria in categorias %}
+                                <option value="{{ categoria['id'] }}" {% if categoria_consulta == categoria['id']|string %}selected{% endif %}>
+                                    {{ categoria['nome'] }}
+                                </option>
+                            {% endfor %}
+                        </select>
+
+                        <input type="hidden" name="data_inicio" value="{{ data_inicio }}">
+                        <input type="hidden" name="data_fim" value="{{ data_fim }}">
+
+                        <button type="submit" class="btn">Consultar</button>
+                    </form>
+
+                    {% if resultado_consulta is not none %}
+                    <div class="consulta-box">
+                        <strong>Total em estoque: {{ resultado_consulta }}</strong>
+
+                        {% if resultado_por_unidade %}
+                        <div style="margin-top: 14px;">
+                            <strong style="font-size:16px;">Por unidade</strong>
+                            <ul>
+                                {% for item in resultado_por_unidade %}
+                                    <li>{{ item['unidade'] }}: {{ item['total'] }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        {% endif %}
+
+                        {% if resultado_por_marca %}
+                        <div style="margin-top: 14px;">
+                            <strong style="font-size:16px;">Por marca</strong>
+                            <ul>
+                                {% for item in resultado_por_marca %}
+                                    <li>{{ item['marca'] }}: {{ item['total'] }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        {% endif %}
+
+                        {% if resultado_marca_unidade %}
+                        <div style="margin-top: 14px;">
+                            <strong style="font-size:16px;">Por marca e unidade</strong>
+                            <table style="width:100%; margin-top:10px; border-collapse: collapse;">
+                                <thead>
+                                    <tr>
+                                        <th style="text-align:left; padding:8px; border-bottom:1px solid #ddd;">Marca</th>
+                                        <th style="text-align:left; padding:8px; border-bottom:1px solid #ddd;">Unidade</th>
+                                        <th style="text-align:left; padding:8px; border-bottom:1px solid #ddd;">Quantidade</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in resultado_marca_unidade %}
+                                        {% if item['total'] > 0 %}
+                                        <tr>
+                                            <td style="padding:8px; border-bottom:1px solid #eee;">{{ item['marca'] }}</td>
+                                            <td style="padding:8px; border-bottom:1px solid #eee;">{{ item['unidade'] }}</td>
+                                            <td style="padding:8px; border-bottom:1px solid #eee;">{{ item['total'] }}</td>
+                                        </tr>
+                                        {% endif %}
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="card">
+                    <h2>Resumo rápido</h2>
+                    <p>
+                        • entradas de estoque<br>
+                        • movimentações<br>
+                        • entregas<br>
+                        • recebimentos para reparo<br>
+                        • saídas do reparo<br>
+                        • filtro por período
+                    </p>
+                </div>
+            </div>
+
+            <div class="table-card">
+                <h2 class="table-title">Entradas de estoque</h2>
+                <div class="table-wrapper">
+                    {% if entradas_estoque %}
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Categoria</th>
+                                <th>Marca</th>
+                                <th>Unidade</th>
+                                <th>Quantidade</th>
+                                <th>Valor Unitário</th>
+                                <th>Valor Total</th>
+                                <th>Observação</th>
+                                <th>Data</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for entrada in entradas_estoque %}
+                            <tr>
+                                <td>{{ entrada['id'] }}</td>
+                                <td>{{ entrada['categoria'] }}</td>
+                                <td>{{ entrada['marca'] }}</td>
+                                <td>{{ entrada['unidade'] }}</td>
+                                <td>{{ entrada['quantidade'] }}</td>
+                                <td class="money">R$ {{ '%.2f'|format(entrada['valor_unitario'] or 0) }}</td>
+                                <td class="money">R$ {{ '%.2f'|format(entrada['valor_total'] or 0) }}</td>
+                                <td>{{ entrada['observacao'] or '-' }}</td>
+                                <td>{{ entrada['data_entrada'] }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <div class="empty">Nenhuma entrada registrada no período.</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="table-card">
+                <h2 class="table-title">Movimentações</h2>
+                <div class="table-wrapper">
+                    {% if movimentacoes %}
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Categoria</th>
+                                <th>Marca</th>
+                                <th>Origem</th>
+                                <th>Destino</th>
+                                <th>Tipo</th>
+                                <th>Quantidade</th>
+                                <th>Observação</th>
+                                <th>Data</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for mov in movimentacoes %}
+                            <tr>
+                                <td>{{ mov['categoria'] }}</td>
+                                <td>{{ mov['marca'] }}</td>
+                                <td>{{ mov['origem'] }}</td>
+                                <td>{{ mov['destino'] }}</td>
+                                <td>{{ mov['tipo_destino'] }}</td>
+                                <td>{{ mov['quantidade'] }}</td>
+                                <td>{{ mov['observacao'] or '-' }}</td>
+                                <td>{{ mov['data_movimentacao'] }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <div class="empty">Nenhuma movimentação registrada no período.</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="table-card">
+                <h2 class="table-title">Entregas</h2>
+                <div class="table-wrapper">
+                    {% if entregas %}
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Categoria</th>
+                                <th>Marca</th>
+                                <th>Unidade</th>
+                                <th>Quantidade</th>
+                                <th>Responsável</th>
+                                <th>Setor</th>
+                                <th>Observação</th>
+                                <th>Data</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for ent in entregas %}
+                            <tr>
+                                <td>{{ ent['categoria'] }}</td>
+                                <td>{{ ent['marca'] }}</td>
+                                <td>{{ ent['unidade'] }}</td>
+                                <td>{{ ent['quantidade'] }}</td>
+                                <td>{{ ent['responsavel'] }}</td>
+                                <td>{{ ent['setor'] }}</td>
+                                <td>{{ ent['observacao'] or '-' }}</td>
+                                <td>{{ ent['data_entrega'] }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <div class="empty">Nenhuma entrega registrada no período.</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="grid-2">
+                <div class="table-card">
+                    <h2 class="table-title">Recebimentos para reparo</h2>
                     <div class="table-wrapper">
-                        {% if entradas_estoque %}
+                        {% if reparos_recebidos %}
                         <table>
                             <thead>
                                 <tr>
-                                    <th>ID</th>
                                     <th>Categoria</th>
                                     <th>Marca</th>
-                                    <th>Unidade</th>
+                                    <th>Loja / origem</th>
+                                    <th>Regional</th>
                                     <th>Quantidade</th>
-                                    <th>Valor Unitário</th>
-                                    <th>Valor Total</th>
                                     <th>Observação</th>
                                     <th>Data</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for entrada in entradas_estoque %}
+                                {% for item in reparos_recebidos %}
                                 <tr>
-                                    <td>{{ entrada['id'] }}</td>
-                                    <td>{{ entrada['categoria'] }}</td>
-                                    <td>{{ entrada['marca'] }}</td>
-                                    <td>{{ entrada['unidade'] }}</td>
-                                    <td>{{ entrada['quantidade'] }}</td>
-                                    <td class="money">R$ {{ '%.2f'|format(entrada['valor_unitario'] or 0) }}</td>
-                                    <td class="money">R$ {{ '%.2f'|format(entrada['valor_total'] or 0) }}</td>
-                                    <td>{{ entrada['observacao'] or '-' }}</td>
-                                    <td>{{ entrada['data_entrada'] }}</td>
+                                    <td>{{ item['categoria'] }}</td>
+                                    <td>{{ item['marca'] }}</td>
+                                    <td>{{ item['origem_loja'] }}</td>
+                                    <td>{{ item['regional_reparo'] }}</td>
+                                    <td>{{ item['quantidade'] }}</td>
+                                    <td>{{ item['observacao'] or '-' }}</td>
+                                    <td>{{ item['data_recebimento'] }}</td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
                         </table>
                         {% else %}
-                        <div class="empty">Nenhuma entrada de estoque registrada ainda.</div>
+                        <div class="empty">Nenhum recebimento para reparo no período.</div>
                         {% endif %}
-                    </div>
-                </div>
-            </div>
-        </details>
-
-        <details class="collapsible">
-            <summary><span class="arrow">▶</span> Relatórios</summary>
-            <div class="collapsible-content">
-
-                <div class="grid-2">
-                    <div class="card">
-                        <h2>Consultar por categoria</h2>
-
-                        <form method="GET">
-                            <label>Categoria</label>
-                            <select name="categoria_consulta" required>
-                                <option value="">Selecione a categoria</option>
-                                {% for categoria in categorias %}
-                                    <option value="{{ categoria['id'] }}" {% if categoria_consulta == categoria['id']|string %}selected{% endif %}>
-                                        {{ categoria['nome'] }}
-                                    </option>
-                                {% endfor %}
-                            </select>
-
-                            <button type="submit" class="btn">Consultar</button>
-                        </form>
-
-                        {% if resultado_consulta is not none %}
-                            <div class="consulta-box">
-                                <strong>Total em estoque: {{ resultado_consulta }}</strong>
-
-                                {% if resultado_por_unidade %}
-                                <div style="margin-top: 14px;">
-                                    <strong style="font-size:16px;">Por unidade</strong>
-                                    <ul>
-                                        {% for item in resultado_por_unidade %}
-                                            <li>{{ item['unidade'] }}: {{ item['total'] }}</li>
-                                        {% endfor %}
-                                    </ul>
-                                </div>
-                                {% endif %}
-
-                                {% if resultado_por_marca %}
-                                <div style="margin-top: 14px;">
-                                    <strong style="font-size:16px;">Por marca</strong>
-                                    <ul>
-                                        {% for item in resultado_por_marca %}
-                                            <li>{{ item['marca'] }}: {{ item['total'] }}</li>
-                                        {% endfor %}
-                                    </ul>
-                                </div>
-                                {% endif %}
-
-                                {% if resultado_marca_unidade %}
-                                <div style="margin-top: 14px;">
-                                    <strong style="font-size:16px;">Por marca e unidade</strong>
-                                    <table style="width:100%; margin-top:10px; border-collapse: collapse;">
-                                        <thead>
-                                            <tr>
-                                                <th style="text-align:left; padding:8px; border-bottom:1px solid #ddd;">Marca</th>
-                                                <th style="text-align:left; padding:8px; border-bottom:1px solid #ddd;">Unidade</th>
-                                                <th style="text-align:left; padding:8px; border-bottom:1px solid #ddd;">Quantidade</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {% for item in resultado_marca_unidade %}
-                                                {% if item['total'] > 0 %}
-                                                <tr>
-                                                    <td style="padding:8px; border-bottom:1px solid #eee;">
-                                                        {{ item['marca'] }}
-                                                    </td>
-                                                    <td style="padding:8px; border-bottom:1px solid #eee;">
-                                                        {{ item['unidade'] }}
-                                                    </td>
-                                                    <td style="padding:8px; border-bottom:1px solid #eee;">
-                                                        {{ item['total'] }}
-                                                    </td>
-                                                </tr>
-                                                {% endif %}
-                                            {% endfor %}
-                                        </tbody>
-                                    </table>
-                                </div>
-                                {% endif %}
-                            </div>
-                            {% endif %}
-                    </div>
-
-                    <div class="card">
-                        <h2>Resumo rápido</h2>
-                        <p>
-                            • alerta de baixo estoque<br>
-                            • resumo por categoria<br>
-                            • resumo por regional<br>
-                            • indicadores gerais
-                        </p>
                     </div>
                 </div>
 
                 <div class="table-card">
-                    <h2 class="table-title">Últimas movimentações</h2>
+                    <h2 class="table-title">Saídas do reparo</h2>
                     <div class="table-wrapper">
-                        {% if movimentacoes %}
+                        {% if reparos_saidas %}
                         <table>
                             <thead>
                                 <tr>
                                     <th>Categoria</th>
                                     <th>Marca</th>
-                                    <th>Origem</th>
+                                    <th>Regional</th>
+                                    <th>Destino tipo</th>
                                     <th>Destino</th>
-                                    <th>Tipo</th>
-                                    <th>Quantidade</th>
-                                    <th>Data</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for mov in movimentacoes %}
-                                <tr>
-                                    <td>{{ mov['categoria'] }}</td>
-                                    <td>{{ mov['marca'] }}</td>
-                                    <td>{{ mov['origem'] }}</td>
-                                    <td>{{ mov['destino'] }}</td>
-                                    <td>{{ mov['tipo_destino'] }}</td>
-                                    <td>{{ mov['quantidade'] }}</td>
-                                    <td>{{ mov['data_movimentacao'] }}</td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                        {% else %}
-                        <div class="empty">Nenhuma movimentação registrada ainda.</div>
-                        {% endif %}
-                    </div>
-                </div>
-
-                <div class="table-card">
-                    <h2 class="table-title">Últimas entregas</h2>
-                    <div class="table-wrapper">
-                        {% if entregas %}
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Categoria</th>
-                                    <th>Marca</th>
-                                    <th>Unidade</th>
-                                    <th>Quantidade</th>
                                     <th>Responsável</th>
-                                    <th>Setor</th>
+                                    <th>Quantidade</th>
+                                    <th>Observação</th>
                                     <th>Data</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for ent in entregas %}
+                                {% for item in reparos_saidas %}
                                 <tr>
-                                    <td>{{ ent['categoria'] }}</td>
-                                    <td>{{ ent['marca'] }}</td>
-                                    <td>{{ ent['unidade'] }}</td>
-                                    <td>{{ ent['quantidade'] }}</td>
-                                    <td>{{ ent['responsavel'] }}</td>
-                                    <td>{{ ent['setor'] }}</td>
-                                    <td>{{ ent['data_entrega'] }}</td>
+                                    <td>{{ item['categoria'] }}</td>
+                                    <td>{{ item['marca'] }}</td>
+                                    <td>{{ item['regional_reparo'] }}</td>
+                                    <td>{{ item['destino_tipo'] }}</td>
+                                    <td>{{ item['destino_nome'] }}</td>
+                                    <td>{{ item['responsavel'] or '-' }}</td>
+                                    <td>{{ item['quantidade'] }}</td>
+                                    <td>{{ item['observacao'] or '-' }}</td>
+                                    <td>{{ item['data_saida'] }}</td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
                         </table>
                         {% else %}
-                        <div class="empty">Nenhuma entrega registrada ainda.</div>
+                        <div class="empty">Nenhuma saída do reparo no período.</div>
                         {% endif %}
                     </div>
                 </div>
-
             </div>
-        </details>
+        </div>
 
     </div>
 
-        <script>
+<script>
+function alternarDestinoReparo() {
+    const tipo = document.getElementById("tipo_destino_reparo").value;
 
-        async function carregarMarcas(categoriaSelectId, marcaSelectId) {
-            const categoriaId = document.getElementById(categoriaSelectId).value;
-            const marcaSelect = document.getElementById(marcaSelectId);
+    const blocoLoja = document.getElementById("bloco_destino_reparo_loja");
+    const blocoRegional = document.getElementById("bloco_destino_reparo_regional");
+    const blocoFuncionario = document.getElementById("bloco_destino_reparo_funcionario");
 
-            marcaSelect.innerHTML = "<option value=''>Carregando...</option>";
+    blocoLoja.style.display = "none";
+    blocoRegional.style.display = "none";
+    blocoFuncionario.style.display = "none";
 
-            if (!categoriaId) {
-                marcaSelect.innerHTML = "<option value=''>Selecione a marca</option>";
-                return;
-            }
+    if (tipo === "loja") {
+        blocoLoja.style.display = "block";
+    } else if (tipo === "regional") {
+        blocoRegional.style.display = "block";
+    } else if (tipo === "funcionario") {
+        blocoFuncionario.style.display = "block";
+    }
+}
+</script>
 
-            const response = await fetch(`/marcas/${categoriaId}`);
-            const html = await response.text();
-            marcaSelect.innerHTML = html;
-        }
+<script>
 
+    function alternarDestinoReparo(){
 
-        function alternarDestino() {
+    const tipo = document.getElementById("tipo_destino_reparo").value
 
-            const tipo = document.getElementById("tipo_destino").value;
+    const loja = document.getElementById("destino_loja_reparo")
+    const regional = document.getElementById("destino_regional_reparo")
+    const cd = document.getElementById("destino_cd_reparo")
+    const funcionario = document.getElementById("destino_funcionario_reparo")
 
-            const blocoInterno = document.getElementById("bloco_destino_interno");
-            const blocoLoja = document.getElementById("bloco_destino_loja");
+    loja.style.display = "none"
+    regional.style.display = "none"
+    cd.style.display = "none"
+    funcionario.style.display = "none"
 
-            blocoInterno.style.display = "none";
-            blocoLoja.style.display = "none";
+    if(tipo === "loja"){
+    loja.style.display = "block"
+    }
 
-            if (tipo === "interno") {
-                blocoInterno.style.display = "block";
-            }
+    if(tipo === "regional"){
+    regional.style.display = "block"
+    }
 
-            if (tipo === "loja") {
-                blocoLoja.style.display = "block";
-            }
+    if(tipo === "cd"){
+    cd.style.display = "block"
+    }
 
-        }
+    if(tipo === "funcionario"){
+    funcionario.style.display = "block"
+    }
 
+    }
 
+</script>
 
-        document.addEventListener("submit", function () {
+<script>
+function alternarDestinoReparo() {
+    const tipo = document.getElementById("destino_tipo").value;
 
-            sessionStorage.setItem("scrollY", window.scrollY);
+    const blocoLoja = document.getElementById("bloco_destino_reparo_loja");
+    const blocoRegional = document.getElementById("bloco_destino_reparo_regional");
+    const blocoFuncionario = document.getElementById("bloco_destino_reparo_funcionario");
 
-            const detailsState = [];
+    blocoLoja.style.display = "none";
+    blocoRegional.style.display = "none";
+    blocoFuncionario.style.display = "none";
 
-            document.querySelectorAll("details").forEach((detail, index) => {
+    if (tipo === "loja") {
+        blocoLoja.style.display = "block";
+    } else if (tipo === "regional") {
+        blocoRegional.style.display = "block";
+    } else if (tipo === "funcionario") {
+        blocoFuncionario.style.display = "block";
+    }
+}
 
-                detailsState.push({
-                    index: index,
-                    open: detail.open
-                });
+function prepararDestinoReparo() {
+    const tipo = document.getElementById("destino_tipo").value;
+    const destinoHidden = document.getElementById("destino_nome_hidden");
 
-            });
+    const loja = document.getElementById("destino_loja_select");
+    const regional = document.getElementById("destino_regional_select");
+    const funcionario = document.getElementById("destino_funcionario_input");
 
-            sessionStorage.setItem("detailsState", JSON.stringify(detailsState));
-
-        });
-
-
-
-        window.addEventListener("load", function () {
-
-            const detailsState = sessionStorage.getItem("detailsState");
-
-            if (detailsState) {
-
-                const parsed = JSON.parse(detailsState);
-
-                document.querySelectorAll("details").forEach((detail, index) => {
-
-                    const saved = parsed.find(item => item.index === index);
-
-                    if (saved) {
-                        detail.open = saved.open;
-                    }
-
-                });
-
-            }
-
-
-            const scrollY = sessionStorage.getItem("scrollY");
-
-            if (scrollY !== null) {
-
-                setTimeout(() => {
-
-                    window.scrollTo(0, parseInt(scrollY));
-
-                }, 50);
-
-            }
-
-
-            sessionStorage.removeItem("scrollY");
-            sessionStorage.removeItem("detailsState");
-
-        });
-
-        </script>
-
+    if (tipo === "loja") {
+        destinoHidden.value = loja.value;
+    } else if (tipo === "regional") {
+        destinoHidden.value = regional.value;
+    } else if (tipo === "cd") {
+        destinoHidden.value = "CD";
+    } else if (tipo === "funcionario") {
+        destinoHidden.value = funcionario.value;
+    } else {
+        destinoHidden.value = "";
+    }
+}
+</script>
 </body>
 </html>
