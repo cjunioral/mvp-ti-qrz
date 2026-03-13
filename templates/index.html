@@ -679,6 +679,7 @@
                                     <th>Marca</th>
                                     <th>Unidade</th>
                                     <th>Quantidade</th>
+                                    <th>Baixa</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -688,6 +689,17 @@
                                     <td>{{ item['marca'] }}</td>
                                     <td>{{ item['unidade'] }}</td>
                                     <td {% if item['quantidade'] <= 3 %}class="low-stock"{% endif %}>{{ item['quantidade'] }}</td>
+                                    <td>
+                                        {% if item['unidade'] not in ['Natal','Mossoró','Paraíba'] %}
+                                        <form method="POST" action="/baixa_loja" style="display:flex; gap:8px;">
+                                            <input type="hidden" name="estoque_id" value="{{ item['id'] }}">
+                                            <input type="number" name="quantidade" placeholder="Qtd" min="1" required style="width:70px;">
+                                            <button type="submit" class="btn">Dar baixa</button>
+                                        </form>
+                                        {% else %}
+                                            —
+                                        {% endif %}
+                                    </td>
                                 </tr>
                                 {% endfor %}
                             </tbody>

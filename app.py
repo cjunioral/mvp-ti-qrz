@@ -662,5 +662,105 @@ def entregar():
     return redirect(url_for("index"))
 
 
+# =========================
+# NOVA ROTA: DAR BAIXA MANUAL NA LOJA
+# =========================
+@app.route("/dar_baixa_loja/<int:item_id>", methods=["POST"])
+def dar_baixa_loja(item_id):
+    quantidade_baixa = request.form.get("quantidade_baixa")
+
+    if not quantidade_baixa:
+        return redirect(url_for("index"))
+
+    try:
+        quantidade_baixa = int(quantidade_baixa)
+    except ValueError:
+        return redirect(url_for("index"))
+
+    if quantidade_baixa <= 0:
+        return redirect(url_for("index"))
+
+    conn = conectar()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT id, quantidade, unidade
+        FROM estoque
+        WHERE id = ?
+    """, (item_id,))
+    item = cursor.fetchone()
+
+    if not item:
+        conn.close()
+        return redirect(url_for("index"))
+
+    if item["quantidade"] < quantidade_baixa:
+        conn.close()
+        return redirect(url_for("index"))
+
+    nova_quantidade = item["quantidade"] - quantidade_baixa
+
+    cursor.execute("""
+        UPDATE estoque
+        SET quantidade = ?
+        WHERE id = ?
+    """, (nova_quantidade, item_id))
+
+    conn.commit()
+    conn.close()
+
+    return redirect(url_for("index"))
+
+@app.route("/baixa_loja", methods=["POST"])
+def baixa_loja():
+    estoque_id = request.form.get("estoque_id")
+    quantidade = request.form.get("quantidade")
+
+    if not estoque_id or not quantidade:
+        return redirect(url_for("index"))
+
+    try:
+        quantidade = int(quantidade)
+    except ValueError:
+        return redirect(url_for("index"))
+
+    if quantidade <= 0:
+        return redirect(url_for("index"))
+
+    conn = conectar()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT quantidade
+        FROM estoque
+        WHERE id = ?
+    """, (estoque_id,))
+
+    item = cursor.fetchone()
+
+    if not item:
+        conn.close()
+        return redirect(url_for("index"))
+
+    nova_quantidade = item["quantidade"] - quantidade
+
+    if nova_quantidade <= 0:
+        cursor.execute("""
+            DELETE FROM estoque
+            WHERE id = ?
+        """, (estoque_id,))
+    else:
+        cursor.execute("""
+            UPDATE estoque
+            SET quantidade = ?
+            WHERE id = ?
+        """, (nova_quantidade, estoque_id))
+
+    conn.commit()
+    conn.close()
+
+    return redirect(url_for("index"))
+
+
 if __name__ == "__main__":
     app.run(debug=True)
