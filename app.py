@@ -207,7 +207,6 @@ def inserir_dados_iniciais():
         ("Samsung", mapa_categorias["Notebook"]),
         ("Lenovo", mapa_categorias["Notebook"]),
         ("Acer", mapa_categorias["Notebook"])
-        
     ]
 
     for nome_marca, categoria_id in marcas_exemplo:
@@ -304,6 +303,8 @@ def index():
     categoria_consulta = request.args.get("categoria_consulta", "").strip()
     resultado_consulta = None
     resultado_por_unidade = []
+    resultado_por_marca = []
+    resultado_marca_unidade = []
 
     if categoria_consulta:
         cursor.execute("""
@@ -322,26 +323,28 @@ def index():
         """, (categoria_consulta,))
         resultado_por_unidade = cursor.fetchall()
 
-    cursor.execute("SELECT COUNT(*) AS total_registros FROM estoque")
-    total_registros = cursor.fetchone()["total_registros"]
+        cursor.execute("""
+            SELECT m.nome AS marca, COALESCE(SUM(e.quantidade), 0) AS total
+            FROM estoque e
+            JOIN marcas m ON e.marca_id = m.id
+            WHERE e.categoria_id = ?
+            GROUP BY m.id, m.nome
+            ORDER BY total DESC, m.nome
+        """, (categoria_consulta,))
+        resultado_por_marca = cursor.fetchall()
 
-    cursor.execute("SELECT COALESCE(SUM(quantidade), 0) AS total_unidades FROM estoque")
-    total_unidades = cursor.fetchone()["total_unidades"]
-
-    cursor.execute("SELECT COALESCE(SUM(valor_total), 0) AS total_compras FROM entradas_estoque")
-    total_compras = cursor.fetchone()["total_compras"]
-
-    cursor.execute("SELECT COUNT(*) AS total_baixo FROM estoque WHERE quantidade <= 3")
-    total_baixo = cursor.fetchone()["total_baixo"]
-
-    cursor.execute("""
-        SELECT c.nome AS categoria, COALESCE(SUM(e.quantidade), 0) AS total
-        FROM categorias c
-        LEFT JOIN estoque e ON e.categoria_id = c.id
-        GROUP BY c.id, c.nome
-        ORDER BY total ASC, c.nome
-    """)
-    resumo_categorias = cursor.fetchall()
+        cursor.execute("""
+            SELECT
+                m.nome AS marca,
+                e.unidade,
+                SUM(e.quantidade) AS total
+            FROM estoque e
+            JOIN marcas m ON e.marca_id = m.id
+            WHERE e.categoria_id = ?
+            GROUP BY m.id, m.nome, e.unidade
+            ORDER BY m.nome, e.unidade
+        """, (categoria_consulta,))
+        resultado_marca_unidade = cursor.fetchall()
 
     cursor.execute("""
         SELECT e.unidade, COALESCE(SUM(e.quantidade), 0) AS total
@@ -382,11 +385,8 @@ def index():
         categoria_consulta=categoria_consulta,
         resultado_consulta=resultado_consulta,
         resultado_por_unidade=resultado_por_unidade,
-        total_registros=total_registros,
-        total_unidades=total_unidades,
-        total_compras=total_compras,
-        total_baixo=total_baixo,
-        resumo_categorias=resumo_categorias,
+        resultado_por_marca=resultado_por_marca,
+        resultado_marca_unidade=resultado_marca_unidade,
         resumo_regionais=resumo_regionais,
         estoque_baixo=estoque_baixo
     )
@@ -662,9 +662,6 @@ def entregar():
     return redirect(url_for("index"))
 
 
-# =========================
-# NOVA ROTA: DAR BAIXA MANUAL NA LOJA
-# =========================
 @app.route("/dar_baixa_loja/<int:item_id>", methods=["POST"])
 def dar_baixa_loja(item_id):
     quantidade_baixa = request.form.get("quantidade_baixa")
@@ -705,56 +702,6 @@ def dar_baixa_loja(item_id):
         SET quantidade = ?
         WHERE id = ?
     """, (nova_quantidade, item_id))
-
-    conn.commit()
-    conn.close()
-
-    return redirect(url_for("index"))
-
-@app.route("/baixa_loja", methods=["POST"])
-def baixa_loja():
-    estoque_id = request.form.get("estoque_id")
-    quantidade = request.form.get("quantidade")
-
-    if not estoque_id or not quantidade:
-        return redirect(url_for("index"))
-
-    try:
-        quantidade = int(quantidade)
-    except ValueError:
-        return redirect(url_for("index"))
-
-    if quantidade <= 0:
-        return redirect(url_for("index"))
-
-    conn = conectar()
-    cursor = conn.cursor()
-
-    cursor.execute("""
-        SELECT quantidade
-        FROM estoque
-        WHERE id = ?
-    """, (estoque_id,))
-
-    item = cursor.fetchone()
-
-    if not item:
-        conn.close()
-        return redirect(url_for("index"))
-
-    nova_quantidade = item["quantidade"] - quantidade
-
-    if nova_quantidade <= 0:
-        cursor.execute("""
-            DELETE FROM estoque
-            WHERE id = ?
-        """, (estoque_id,))
-    else:
-        cursor.execute("""
-            UPDATE estoque
-            SET quantidade = ?
-            WHERE id = ?
-        """, (nova_quantidade, estoque_id))
 
     conn.commit()
     conn.close()

@@ -690,14 +690,23 @@
                                     <td>{{ item['unidade'] }}</td>
                                     <td {% if item['quantidade'] <= 3 %}class="low-stock"{% endif %}>{{ item['quantidade'] }}</td>
                                     <td>
-                                        {% if item['unidade'] not in ['Natal','Mossoró','Paraíba'] %}
-                                        <form method="POST" action="/baixa_loja" style="display:flex; gap:8px;">
-                                            <input type="hidden" name="estoque_id" value="{{ item['id'] }}">
-                                            <input type="number" name="quantidade" placeholder="Qtd" min="1" required style="width:70px;">
-                                            <button type="submit" class="btn">Dar baixa</button>
+                                        {% if item['unidade'] not in ['Natal', 'Mossoró', 'Paraíba'] %}
+                                        <form method="POST" action="/dar_baixa_loja/{{ item['id'] }}" style="display:flex; gap:8px; align-items:center;">
+                                            <input
+                                                type="number"
+                                                name="quantidade_baixa"
+                                                min="1"
+                                                max="{{ item['quantidade'] }}"
+                                                placeholder="Qtd"
+                                                style="width:90px; margin-bottom:0;"
+                                                required
+                                            >
+                                            <button type="submit" class="btn" style="width:auto; padding:0 14px; height:40px;">
+                                                Dar baixa
+                                            </button>
                                         </form>
                                         {% else %}
-                                            —
+                                        <span style="color:#9ca3af;">—</span>
                                         {% endif %}
                                     </td>
                                 </tr>
@@ -779,17 +788,56 @@
                         </form>
 
                         {% if resultado_consulta is not none %}
-                        <div class="consulta-box">
-                            <strong>Total em estoque: {{ resultado_consulta }}</strong>
-                            {% if resultado_por_unidade %}
-                            <ul>
-                                {% for item in resultado_por_unidade %}
-                                    <li>{{ item['unidade'] }}: {{ item['total'] }}</li>
-                                {% endfor %}
-                            </ul>
+                            <div class="consulta-box">
+                                <strong>Total em estoque: {{ resultado_consulta }}</strong>
+
+                                {% if resultado_por_unidade %}
+                                <div style="margin-top: 14px;">
+                                    <strong style="font-size:16px;">Por unidade</strong>
+                                    <ul>
+                                        {% for item in resultado_por_unidade %}
+                                            <li>{{ item['unidade'] }}: {{ item['total'] }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                                {% endif %}
+
+                                {% if resultado_por_marca %}
+                                <div style="margin-top: 14px;">
+                                    <strong style="font-size:16px;">Por marca</strong>
+                                    <ul>
+                                        {% for item in resultado_por_marca %}
+                                            <li>{{ item['marca'] }}: {{ item['total'] }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                                {% endif %}
+
+                                {% if resultado_marca_unidade %}
+                                <div style="margin-top: 14px;">
+                                    <strong style="font-size:16px;">Por marca e unidade</strong>
+                                    <table style="width:100%; margin-top:10px; border-collapse: collapse;">
+                                        <thead>
+                                            <tr>
+                                                <th style="text-align:left; padding:8px; border-bottom:1px solid #ddd;">Marca</th>
+                                                <th style="text-align:left; padding:8px; border-bottom:1px solid #ddd;">Unidade</th>
+                                                <th style="text-align:left; padding:8px; border-bottom:1px solid #ddd;">Quantidade</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for item in resultado_marca_unidade %}
+                                            <tr>
+                                                <td style="padding:8px; border-bottom:1px solid #eee;">{{ item['marca'] }}</td>
+                                                <td style="padding:8px; border-bottom:1px solid #eee;">{{ item['unidade'] }}</td>
+                                                <td style="padding:8px; border-bottom:1px solid #eee;">{{ item['total'] }}</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                                {% endif %}
+                            </div>
                             {% endif %}
-                        </div>
-                        {% endif %}
                     </div>
 
                     <div class="card">
@@ -879,5 +927,109 @@
         </details>
 
     </div>
+
+        <script>
+
+        async function carregarMarcas(categoriaSelectId, marcaSelectId) {
+            const categoriaId = document.getElementById(categoriaSelectId).value;
+            const marcaSelect = document.getElementById(marcaSelectId);
+
+            marcaSelect.innerHTML = "<option value=''>Carregando...</option>";
+
+            if (!categoriaId) {
+                marcaSelect.innerHTML = "<option value=''>Selecione a marca</option>";
+                return;
+            }
+
+            const response = await fetch(`/marcas/${categoriaId}`);
+            const html = await response.text();
+            marcaSelect.innerHTML = html;
+        }
+
+
+        function alternarDestino() {
+
+            const tipo = document.getElementById("tipo_destino").value;
+
+            const blocoInterno = document.getElementById("bloco_destino_interno");
+            const blocoLoja = document.getElementById("bloco_destino_loja");
+
+            blocoInterno.style.display = "none";
+            blocoLoja.style.display = "none";
+
+            if (tipo === "interno") {
+                blocoInterno.style.display = "block";
+            }
+
+            if (tipo === "loja") {
+                blocoLoja.style.display = "block";
+            }
+
+        }
+
+
+
+        document.addEventListener("submit", function () {
+
+            sessionStorage.setItem("scrollY", window.scrollY);
+
+            const detailsState = [];
+
+            document.querySelectorAll("details").forEach((detail, index) => {
+
+                detailsState.push({
+                    index: index,
+                    open: detail.open
+                });
+
+            });
+
+            sessionStorage.setItem("detailsState", JSON.stringify(detailsState));
+
+        });
+
+
+
+        window.addEventListener("load", function () {
+
+            const detailsState = sessionStorage.getItem("detailsState");
+
+            if (detailsState) {
+
+                const parsed = JSON.parse(detailsState);
+
+                document.querySelectorAll("details").forEach((detail, index) => {
+
+                    const saved = parsed.find(item => item.index === index);
+
+                    if (saved) {
+                        detail.open = saved.open;
+                    }
+
+                });
+
+            }
+
+
+            const scrollY = sessionStorage.getItem("scrollY");
+
+            if (scrollY !== null) {
+
+                setTimeout(() => {
+
+                    window.scrollTo(0, parseInt(scrollY));
+
+                }, 50);
+
+            }
+
+
+            sessionStorage.removeItem("scrollY");
+            sessionStorage.removeItem("detailsState");
+
+        });
+
+        </script>
+
 </body>
 </html>
