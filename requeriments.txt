@@ -1,4 +1,1 @@
-flask
-gunicorn
-sqlalchemy
-psycopg2-binary
+Flask==3.0.2
