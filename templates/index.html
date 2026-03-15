@@ -575,9 +575,122 @@
 
         /* ── HIDDEN FIELD BLOCKS ── */
         .dest-block { display: none; }
+
+        /* ── PRINT BUTTON ── */
+        .btn-print {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            border: 1.5px solid var(--border);
+            background: var(--card);
+            color: var(--ink-2);
+            border-radius: var(--radius-sm);
+            height: 36px;
+            padding: 0 14px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all var(--transition);
+            white-space: nowrap;
+        }
+        .btn-print:hover { background: var(--ink); color: #fff; border-color: var(--ink); }
+        .btn-print svg { width: 15px; height: 15px; flex-shrink: 0; }
+
+        /* ── PRINT HEADER (only visible on print) ── */
+        .print-header { display: none; }
+
+        @media print {
+            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            body { background: #fff !important; color: #000 !important; font-size: 12px; }
+
+            .sidebar, .hamburger, .overlay,
+            .stats, .btn-print, .search-box,
+            .topbar, .alerts, .dashboard-grid,
+            .low-grid, form, .card, .chart-card,
+            .tab-pane:not(.active),
+            .nav, .sidebar-footer { display: none !important; }
+
+            .main { margin-left: 0 !important; padding: 0 !important; }
+            .tab-pane.active { display: block !important; }
+
+            .print-header {
+                display: flex !important;
+                align-items: flex-start;
+                justify-content: space-between;
+                padding-bottom: 12px;
+                margin-bottom: 18px;
+                border-bottom: 3px solid #e30613;
+            }
+            .print-header .ph-brand {
+                font-family: 'Syne', sans-serif;
+                font-size: 20px;
+                font-weight: 800;
+                line-height: 1.2;
+            }
+            .print-header .ph-brand span { color: #e30613; }
+            .print-header .ph-sub { font-size: 12px; color: #555; margin-top: 2px; }
+            .print-header .ph-meta { font-size: 11px; color: #555; text-align: right; line-height: 1.6; }
+
+            .table-card {
+                box-shadow: none !important;
+                border: 1px solid #ddd !important;
+                border-radius: 4px !important;
+                margin-bottom: 20px !important;
+                page-break-inside: avoid;
+            }
+            .table-header { padding: 10px 14px !important; border-bottom: 1px solid #ddd !important; }
+            .table-header h2 { font-size: 14px !important; font-weight: 700 !important; }
+
+            thead th {
+                background: #f3f4f6 !important;
+                font-size: 10px !important;
+                padding: 7px 10px !important;
+                border-bottom: 1px solid #ddd !important;
+            }
+            tbody td { font-size: 11px !important; padding: 6px 10px !important; }
+            tbody tr:last-child td { border-bottom: none !important; }
+
+            .low-stock { color: #e30613 !important; font-weight: 800 !important; }
+            .money { color: #16a34a !important; font-weight: 700 !important; }
+            .badge-tag { border: 1px solid currentColor !important; background: transparent !important; font-size: 10px !important; }
+
+            /* Hide "Baixa em loja" column only in estoque table */
+            #tbl-estoque th:last-child,
+            #tbl-estoque td:last-child { display: none !important; }
+
+            /* Repair summary cards in reparos tab */
+            #tab-reparos .low-grid {
+                display: grid !important;
+                grid-template-columns: repeat(3, 1fr) !important;
+                gap: 16px !important;
+                margin-bottom: 20px !important;
+            }
+            #tab-reparos .chart-card {
+                display: flex !important;
+                flex-direction: column !important;
+                border: 1px solid #ddd !important;
+                border-radius: 6px !important;
+                padding: 12px !important;
+                page-break-inside: avoid;
+            }
+            #tab-reparos .chart-title { font-size: 13px !important; font-weight: 700 !important; margin-bottom: 8px !important; }
+            #tab-reparos .mini-item { padding: 5px 8px !important; }
+            #tab-reparos .mini-item .name { font-size: 11px !important; }
+            #tab-reparos .mini-item .qty { font-size: 13px !important; }
+        }
     </style>
 </head>
 <body>
+
+<!-- Print header — hidden on screen, visible on print -->
+<div class="print-header" id="print-header">
+    <div>
+        <div class="ph-brand">TI <span>QRZ</span></div>
+        <div class="ph-sub">Grupo Queiroz · Controle de Estoque</div>
+    </div>
+    <div class="ph-meta" id="print-meta"></div>
+</div>
 
 <!-- Mobile overlay -->
 <div class="overlay" id="overlay" onclick="fecharMenu()"></div>
@@ -1028,8 +1141,14 @@
         <div class="table-card">
             <div class="table-header">
                 <h2>🔧 Estoque de reparos — completo</h2>
-                <div class="search-box">
-                    <input type="text" placeholder="Buscar..." oninput="filtrarTabela(this,'tbl-reparos-estoque')">
+                <div style="display:flex;gap:8px;align-items:center;">
+                    <div class="search-box">
+                        <input type="text" placeholder="Buscar..." oninput="filtrarTabela(this,'tbl-reparos-estoque')">
+                    </div>
+                    <button class="btn-print" onclick="imprimirSecao('Estoque de Reparos')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                        Imprimir
+                    </button>
                 </div>
             </div>
             <div class="table-wrapper">
@@ -1066,8 +1185,14 @@
         <div class="table-card">
             <div class="table-header">
                 <h2>🗃️ Estoque principal</h2>
-                <div class="search-box">
-                    <input type="text" placeholder="Buscar..." oninput="filtrarTabela(this,'tbl-estoque')">
+                <div style="display:flex;gap:8px;align-items:center;">
+                    <div class="search-box">
+                        <input type="text" placeholder="Buscar..." oninput="filtrarTabela(this,'tbl-estoque')">
+                    </div>
+                    <button class="btn-print" onclick="imprimirSecao('Estoque Principal')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                        Imprimir
+                    </button>
                 </div>
             </div>
             <div class="table-wrapper">
@@ -1129,6 +1254,12 @@
                 <input type="hidden" name="categoria_consulta" value="{{ categoria_consulta }}">
                 {% endif %}
             </form>
+            <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;">
+                <button class="btn-print" onclick="imprimirSecao('Relatórios Completos')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                    Imprimir todos os relatórios
+                </button>
+            </div>
         </div>
 
         <div class="grid-2" style="margin-bottom:20px;">
@@ -1214,8 +1345,14 @@
         <div class="table-card">
             <div class="table-header">
                 <h2>📥 Entradas de estoque</h2>
-                <div class="search-box">
-                    <input type="text" placeholder="Buscar..." oninput="filtrarTabela(this,'tbl-entradas')">
+                <div style="display:flex;gap:8px;align-items:center;">
+                    <div class="search-box">
+                        <input type="text" placeholder="Buscar..." oninput="filtrarTabela(this,'tbl-entradas')">
+                    </div>
+                    <button class="btn-print" onclick="imprimirTabela('tbl-entradas','Entradas de Estoque')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                        Imprimir
+                    </button>
                 </div>
             </div>
             <div class="table-wrapper">
@@ -1254,8 +1391,14 @@
         <div class="table-card">
             <div class="table-header">
                 <h2>🔄 Movimentações</h2>
-                <div class="search-box">
-                    <input type="text" placeholder="Buscar..." oninput="filtrarTabela(this,'tbl-movs')">
+                <div style="display:flex;gap:8px;align-items:center;">
+                    <div class="search-box">
+                        <input type="text" placeholder="Buscar..." oninput="filtrarTabela(this,'tbl-movs')">
+                    </div>
+                    <button class="btn-print" onclick="imprimirTabela('tbl-movs','Movimentações')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                        Imprimir
+                    </button>
                 </div>
             </div>
             <div class="table-wrapper">
@@ -1293,8 +1436,14 @@
         <div class="table-card">
             <div class="table-header">
                 <h2>🤝 Entregas</h2>
-                <div class="search-box">
-                    <input type="text" placeholder="Buscar..." oninput="filtrarTabela(this,'tbl-entregas')">
+                <div style="display:flex;gap:8px;align-items:center;">
+                    <div class="search-box">
+                        <input type="text" placeholder="Buscar..." oninput="filtrarTabela(this,'tbl-entregas')">
+                    </div>
+                    <button class="btn-print" onclick="imprimirTabela('tbl-entregas','Entregas')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                        Imprimir
+                    </button>
                 </div>
             </div>
             <div class="table-wrapper">
@@ -1333,8 +1482,14 @@
             <div class="table-card">
                 <div class="table-header">
                     <h2>🔧 Recebimentos p/ reparo</h2>
-                    <div class="search-box">
-                        <input type="text" placeholder="Buscar..." oninput="filtrarTabela(this,'tbl-rep-rec')">
+                    <div style="display:flex;gap:8px;align-items:center;">
+                        <div class="search-box">
+                            <input type="text" placeholder="Buscar..." oninput="filtrarTabela(this,'tbl-rep-rec')">
+                        </div>
+                        <button class="btn-print" onclick="imprimirTabela('tbl-rep-rec','Recebimentos para Reparo')">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                            Imprimir
+                        </button>
                     </div>
                 </div>
                 <div class="table-wrapper">
@@ -1369,8 +1524,14 @@
             <div class="table-card">
                 <div class="table-header">
                     <h2>📤 Saídas do reparo</h2>
-                    <div class="search-box">
-                        <input type="text" placeholder="Buscar..." oninput="filtrarTabela(this,'tbl-rep-sai')">
+                    <div style="display:flex;gap:8px;align-items:center;">
+                        <div class="search-box">
+                            <input type="text" placeholder="Buscar..." oninput="filtrarTabela(this,'tbl-rep-sai')">
+                        </div>
+                        <button class="btn-print" onclick="imprimirTabela('tbl-rep-sai','Saídas do Reparo')">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                            Imprimir
+                        </button>
                     </div>
                 </div>
                 <div class="table-wrapper">
@@ -1610,6 +1771,103 @@ window.addEventListener('load', function () {
         }
     });
 });
+
+/* ═══════════════════════════════════════════════════
+   IMPRESSÃO
+   imprimirSecao(titulo) — imprime a aba ativa inteira
+   imprimirTabela(tableId, titulo) — abre janela com só aquela tabela
+═══════════════════════════════════════════════════ */
+
+function _formatarDataHora() {
+    const now = new Date();
+    return now.toLocaleDateString('pt-BR') + ' às ' + now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+}
+
+// Imprime a aba ativa inteira (ex: Estoque Principal, Reparos)
+function imprimirSecao(titulo) {
+    document.getElementById('print-meta').innerHTML =
+        '<strong>' + titulo + '</strong><br>Emitido em: ' + _formatarDataHora();
+    window.print();
+}
+
+// Imprime só uma tabela específica numa janela separada
+function imprimirTabela(tableId, titulo) {
+    const tabela = document.getElementById(tableId);
+    if (!tabela) return;
+
+    // Coletar só as linhas visíveis (respeita o filtro de busca)
+    const thead = tabela.querySelector('thead').outerHTML;
+    const linhasVisiveis = Array.from(tabela.querySelectorAll('tbody tr'))
+        .filter(tr => tr.style.display !== 'none')
+        .map(tr => tr.outerHTML)
+        .join('');
+
+    const now = _formatarDataHora();
+
+    const html = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>${titulo} — TI QRZ</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; font-size: 12px; color: #111; background: #fff; padding: 24px; }
+
+  .ph { display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 12px; margin-bottom: 18px; border-bottom: 3px solid #e30613; }
+  .ph-brand { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800; }
+  .ph-brand span { color: #e30613; }
+  .ph-sub { font-size: 11px; color: #666; margin-top: 2px; }
+  .ph-meta { font-size: 11px; color: #555; text-align: right; line-height: 1.7; }
+
+  h2 { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 800; margin-bottom: 14px; }
+
+  table { width: 100%; border-collapse: collapse; }
+  thead th { background: #f3f4f6; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; padding: 8px 10px; border-bottom: 1px solid #ddd; text-align: left; color: #555; }
+  tbody td { font-size: 11px; padding: 7px 10px; border-bottom: 1px solid #eee; vertical-align: middle; }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:nth-child(even) { background: #fafafa; }
+
+  .low-stock { color: #e30613; font-weight: 800; }
+  .money { color: #16a34a; font-weight: 700; }
+  .badge-tag { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 999px; border: 1px solid currentColor; }
+  .badge-tag.green  { color: #16a34a; }
+  .badge-tag.amber  { color: #d97706; }
+  .badge-tag.gray   { color: #6b7280; }
+
+  .footer { margin-top: 24px; font-size: 10px; color: #aaa; text-align: center; border-top: 1px solid #eee; padding-top: 10px; }
+
+  @media print {
+    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+    body { padding: 16px; }
+  }
+</style>
+</head>
+<body>
+  <div class="ph">
+    <div>
+      <div class="ph-brand">TI <span>QRZ</span></div>
+      <div class="ph-sub">Grupo Queiroz · Controle de Estoque</div>
+    </div>
+    <div class="ph-meta"><strong>${titulo}</strong><br>Emitido em: ${now}</div>
+  </div>
+
+  <h2>${titulo}</h2>
+
+  <table>
+    ${thead}
+    <tbody>${linhasVisiveis}</tbody>
+  </table>
+
+  <div class="footer">Grupo Queiroz · Setor de TI · ${now}</div>
+<script>window.onload = function(){ window.print(); window.onafterprint = function(){ window.close(); }; }<\/script>
+</body>
+</html>`;
+
+    const win = window.open('', '_blank', 'width=1000,height=700');
+    win.document.write(html);
+    win.document.close();
+}
 </script>
 </body>
 </html>
