@@ -8,7 +8,6 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 
     <style>
         :root {
@@ -556,22 +555,176 @@
             .low-grid { grid-template-columns: 1fr; }
         }
 
+        /* ── TABLET (≤900px) ── */
         @media (max-width: 900px) {
-            .sidebar { transform: translateX(-100%); }
-            .sidebar.open { transform: translateX(0); }
+            .sidebar { transform: translateX(-100%); box-shadow: none; }
+            .sidebar.open { transform: translateX(0); box-shadow: var(--shadow-lg); }
             .main { margin-left: 0; padding: 20px 16px; }
             .hamburger { display: flex; align-items: center; justify-content: center; }
             .grid-2, .grid-3 { grid-template-columns: 1fr; }
             .stats { grid-template-columns: repeat(2, 1fr); }
             .report-filter { grid-template-columns: 1fr 1fr; }
             .report-filter .btn { grid-column: span 2; }
+            .dashboard-grid { grid-template-columns: 1fr; }
+            .low-grid { grid-template-columns: 1fr !important; }
+            .table-header { gap: 8px; padding: 14px 16px; }
+            .table-header > div { flex-wrap: wrap; gap: 6px; }
             .search-box input { width: 160px; }
+            .btn-print { font-size: 12px; padding: 0 10px; height: 34px; }
         }
 
-        @media (max-width: 540px) {
-            .stats { grid-template-columns: 1fr; }
-            .topbar-title { font-size: 20px; }
+        /* ── MOBILE (≤640px) ── */
+        @media (max-width: 640px) {
+            /* Layout */
+            .main { padding: 14px 12px; }
+            .topbar { margin-bottom: 16px; gap: 10px; }
+            .topbar-title { font-size: 19px; }
+
+            /* Stats */
+            .stats { grid-template-columns: 1fr 1fr; gap: 10px; }
+            .stat-card { padding: 14px 14px; }
+            .stat-value { font-size: 22px; }
+            .stat-label { font-size: 11px; }
+
+            /* Cards / forms */
+            .card { padding: 16px 14px; }
+            .card-title { font-size: 15px; margin-bottom: 14px; }
+            label { font-size: 13px; }
+            input, select, textarea { font-size: 16px; /* prevent iOS zoom */ min-height: 48px; }
+            .btn { height: 48px; font-size: 15px; }
+
+            /* Table headers: stack search + print */
+            .table-header { flex-direction: column; align-items: flex-start; gap: 10px; padding: 14px; }
+            .table-header > div { width: 100%; }
+            .search-box { width: 100%; }
+            .search-box input { width: 100%; height: 40px; border-radius: 999px; }
+            .btn-print { width: 100%; justify-content: center; height: 40px; }
+
+            /* Tables: horizontal scroll with visual hint */
+            .table-wrapper {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                position: relative;
+            }
+            .table-wrapper::after {
+                content: '';
+                position: absolute;
+                top: 0; right: 0;
+                width: 28px; height: 100%;
+                background: linear-gradient(to left, rgba(255,255,255,0.9), transparent);
+                pointer-events: none;
+                border-radius: 0 0 var(--radius) 0;
+            }
+            table { min-width: 480px; }
+            thead th { font-size: 10px; padding: 10px 12px; white-space: nowrap; }
+            tbody td { font-size: 12px; padding: 10px 12px; }
+
+            /* Charts */
+            .chart-wrap { height: 180px; }
+            .chart-card { padding: 16px; }
+            .chart-title { font-size: 14px; }
+
+            /* Mini list */
+            .mini-item { padding: 9px 12px; }
+            .mini-item .name { font-size: 13px; }
+            .mini-item .qty { font-size: 15px; }
+
+            /* Consulta box */
+            .consulta-box { padding: 14px; }
+
+            /* Report filter */
+            .report-filter { grid-template-columns: 1fr; gap: 10px; }
+            .report-filter .btn { grid-column: span 1; }
+
+            /* Repair summary cards */
+            #tab-reparos .low-grid { grid-template-columns: 1fr !important; }
+
+            /* Searchable select dropdown — fixed on mobile so it doesn't clip */
+            .sel-dropdown {
+                position: fixed !important;
+                left: 12px !important; right: 12px !important;
+                top: auto !important;
+                width: auto !important;
+                max-height: 60vh;
+                overflow-y: auto;
+                z-index: 500;
+                border-radius: 16px;
+                box-shadow: var(--shadow-lg);
+            }
+            .sel-list { max-height: 40vh; }
+            .sel-option { padding: 14px 16px; font-size: 15px; min-height: 48px; display: flex; align-items: center; }
+            .sel-search-wrap input { min-height: 44px; font-size: 16px; }
+
+            /* Baixa em loja form on mobile */
+            #tbl-estoque td:last-child form { flex-direction: column; gap: 6px; }
+            #tbl-estoque td:last-child input { width: 100% !important; }
+            #tbl-estoque td:last-child .btn.sm { width: 100%; }
         }
+
+        /* ── SMALL MOBILE (≤400px) ── */
+        @media (max-width: 400px) {
+            .stats { grid-template-columns: 1fr 1fr; gap: 8px; }
+            .stat-value { font-size: 18px; }
+            .stat-label { font-size: 10px; }
+            .main { padding: 12px 10px; }
+            .topbar-title { font-size: 17px; }
+            table { min-width: 420px; }
+        }
+
+        /* ── SEARCHABLE SELECT ── */
+        .sel-wrap { position: relative; margin-bottom: 14px; }
+        .sel-wrap select { display: none; }
+        .sel-trigger {
+            width: 100%; min-height: 46px; padding: 10px 38px 10px 14px;
+            border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+            font-family: 'DM Sans', sans-serif; font-size: 14px;
+            background: var(--card); color: var(--ink-2); cursor: pointer;
+            display: flex; align-items: center;
+            transition: border-color var(--transition), box-shadow var(--transition);
+            user-select: none; position: relative;
+        }
+        .sel-trigger::after {
+            content: ''; position: absolute; right: 14px; top: 50%;
+            transform: translateY(-50%); width: 0; height: 0;
+            border-left: 5px solid transparent; border-right: 5px solid transparent;
+            border-top: 6px solid var(--muted); transition: transform var(--transition);
+        }
+        .sel-wrap.open .sel-trigger { border-color: var(--red); box-shadow: 0 0 0 3px var(--red-glow); }
+        .sel-wrap.open .sel-trigger::after { transform: translateY(-50%) rotate(180deg); }
+        .sel-trigger.filled { border-color: var(--red); }
+        .sel-placeholder { color: var(--muted); }
+        .sel-dropdown {
+            display: none; position: absolute; top: calc(100% + 4px); left: 0; right: 0;
+            background: var(--card); border: 1.5px solid var(--border);
+            border-radius: var(--radius-sm); box-shadow: var(--shadow); z-index: 300; overflow: hidden;
+        }
+        .sel-wrap.open .sel-dropdown { display: block; }
+        .sel-search-wrap { padding: 10px; border-bottom: 1px solid var(--border); position: relative; }
+        .sel-search-wrap input {
+            margin: 0; padding: 8px 12px 8px 34px; height: 38px;
+            font-size: 13px; border-radius: 8px; border: 1.5px solid var(--border); width: 100%;
+        }
+        .sel-search-wrap::before {
+            content: '🔍'; position: absolute; left: 20px; top: 50%;
+            transform: translateY(-50%); font-size: 13px; pointer-events: none;
+        }
+        .sel-list { max-height: 220px; overflow-y: auto; padding: 4px 0; }
+        .sel-option {
+            padding: 10px 14px; font-size: 14px; cursor: pointer;
+            transition: background var(--transition); color: var(--ink-2);
+        }
+        .sel-option:hover, .sel-option:active { background: var(--surface); }
+        .sel-option.selected { background: var(--red-glow); color: var(--red); font-weight: 600; }
+        .sel-option.hidden { display: none; }
+        .sel-empty { padding: 14px; text-align: center; color: var(--muted); font-size: 13px; }
+
+        /* Mobile backdrop for closing dropdown */
+        .sel-backdrop {
+            display: none;
+            position: fixed; inset: 0; z-index: 499;
+            background: rgba(0,0,0,0.25);
+        }
+        .sel-backdrop.active { display: block; }
 
         /* ── HIDDEN FIELD BLOCKS ── */
         .dest-block { display: none; }
@@ -694,6 +847,8 @@
 
 <!-- Mobile overlay -->
 <div class="overlay" id="overlay" onclick="fecharMenu()"></div>
+<!-- Backdrop para fechar searchable select no mobile -->
+<div class="sel-backdrop" id="sel-backdrop"></div>
 
 <!-- SIDEBAR -->
 <nav class="sidebar" id="sidebar">
@@ -865,12 +1020,19 @@
                 <div class="card-title">🏷️ Cadastrar marca</div>
                 <form method="POST" action="/cadastrar_marca">
                     <label>Categoria</label>
-                    <select name="categoria_id_marca" required>
+                    <div class="sel-wrap" data-sel="cat-sel-1">
+                    <select name="categoria_id_marca" required data-sel-id="cat-sel-1">
                         <option value="">Selecione a categoria</option>
                         {% for categoria in categorias %}
                             <option value="{{ categoria['id'] }}">{{ categoria['nome'] }}</option>
                         {% endfor %}
                     </select>
+                    <div class="sel-trigger sel-placeholder-active" data-sel-trigger="cat-sel-1"><span class="sel-placeholder">Selecione a categoria</span></div>
+                    <div class="sel-dropdown" data-sel-dropdown="cat-sel-1">
+                        <div class="sel-search-wrap"><input type="text" placeholder="Buscar categoria..." data-sel-search="cat-sel-1" autocomplete="off"></div>
+                        <div class="sel-list" data-sel-list="cat-sel-1"></div>
+                    </div>
+                </div>
                     <label>Nome da marca</label>
                     <input type="text" name="nome_marca" placeholder="Ex: Logitech" required>
                     <button type="submit" class="btn">Cadastrar</button>
@@ -881,12 +1043,19 @@
                 <div class="card-title">📥 Entrada de estoque</div>
                 <form method="POST" action="/adicionar_estoque">
                     <label>Categoria</label>
-                    <select name="categoria_id" id="categoria_add" onchange="carregarMarcas('categoria_add','marca_add')" required>
+                    <div class="sel-wrap" data-sel="cat-sel-2">
+                    <select name="categoria_id" id="categoria_add" onchange="carregarMarcas('categoria_add','marca_add')" required data-sel-id="cat-sel-2">
                         <option value="">Selecione a categoria</option>
                         {% for categoria in categorias %}
                             <option value="{{ categoria['id'] }}">{{ categoria['nome'] }}</option>
                         {% endfor %}
                     </select>
+                    <div class="sel-trigger sel-placeholder-active" data-sel-trigger="cat-sel-2"><span class="sel-placeholder">Selecione a categoria</span></div>
+                    <div class="sel-dropdown" data-sel-dropdown="cat-sel-2">
+                        <div class="sel-search-wrap"><input type="text" placeholder="Buscar categoria..." data-sel-search="cat-sel-2" autocomplete="off"></div>
+                        <div class="sel-list" data-sel-list="cat-sel-2"></div>
+                    </div>
+                </div>
                     <label>Marca</label>
                     <select name="marca_id" id="marca_add" required>
                         <option value="">Selecione a marca</option>
@@ -917,12 +1086,19 @@
                 <div class="card-title">🔄 Transferir entre unidades / lojas</div>
                 <form method="POST" action="/transferir">
                     <label>Categoria</label>
-                    <select name="categoria_id" id="categoria_transf" onchange="carregarMarcas('categoria_transf','marca_transf')" required>
+                    <div class="sel-wrap" data-sel="cat-sel-3">
+                    <select name="categoria_id" id="categoria_transf" onchange="carregarMarcas('categoria_transf','marca_transf')" required data-sel-id="cat-sel-3">
                         <option value="">Selecione a categoria</option>
                         {% for categoria in categorias %}
                             <option value="{{ categoria['id'] }}">{{ categoria['nome'] }}</option>
                         {% endfor %}
                     </select>
+                    <div class="sel-trigger sel-placeholder-active" data-sel-trigger="cat-sel-3"><span class="sel-placeholder">Selecione a categoria</span></div>
+                    <div class="sel-dropdown" data-sel-dropdown="cat-sel-3">
+                        <div class="sel-search-wrap"><input type="text" placeholder="Buscar categoria..." data-sel-search="cat-sel-3" autocomplete="off"></div>
+                        <div class="sel-list" data-sel-list="cat-sel-3"></div>
+                    </div>
+                </div>
                     <label>Marca</label>
                     <select name="marca_id" id="marca_transf" required>
                         <option value="">Selecione a marca</option>
@@ -970,12 +1146,19 @@
                 <div class="card-title">🤝 Entrega de item</div>
                 <form method="POST" action="/entregar">
                     <label>Categoria</label>
-                    <select name="categoria_id" id="categoria_entrega" onchange="carregarMarcas('categoria_entrega','marca_entrega')" required>
+                    <div class="sel-wrap" data-sel="cat-sel-4">
+                    <select name="categoria_id" id="categoria_entrega" onchange="carregarMarcas('categoria_entrega','marca_entrega')" required data-sel-id="cat-sel-4">
                         <option value="">Selecione a categoria</option>
                         {% for categoria in categorias %}
                             <option value="{{ categoria['id'] }}">{{ categoria['nome'] }}</option>
                         {% endfor %}
                     </select>
+                    <div class="sel-trigger sel-placeholder-active" data-sel-trigger="cat-sel-4"><span class="sel-placeholder">Selecione a categoria</span></div>
+                    <div class="sel-dropdown" data-sel-dropdown="cat-sel-4">
+                        <div class="sel-search-wrap"><input type="text" placeholder="Buscar categoria..." data-sel-search="cat-sel-4" autocomplete="off"></div>
+                        <div class="sel-list" data-sel-list="cat-sel-4"></div>
+                    </div>
+                </div>
                     <label>Marca</label>
                     <select name="marca_id" id="marca_entrega" required>
                         <option value="">Selecione a marca</option>
@@ -1008,12 +1191,19 @@
                 <div class="card-title">🔧 Recebimento para reparo</div>
                 <form method="POST" action="/receber_reparo">
                     <label>Categoria</label>
-                    <select name="categoria_id" id="categoria_reparo" onchange="carregarMarcas('categoria_reparo','marca_reparo')" required>
+                    <div class="sel-wrap" data-sel="cat-sel-5">
+                    <select name="categoria_id" id="categoria_reparo" onchange="carregarMarcas('categoria_reparo','marca_reparo')" required data-sel-id="cat-sel-5">
                         <option value="">Selecione a categoria</option>
                         {% for categoria in categorias %}
                             <option value="{{ categoria['id'] }}">{{ categoria['nome'] }}</option>
                         {% endfor %}
                     </select>
+                    <div class="sel-trigger sel-placeholder-active" data-sel-trigger="cat-sel-5"><span class="sel-placeholder">Selecione a categoria</span></div>
+                    <div class="sel-dropdown" data-sel-dropdown="cat-sel-5">
+                        <div class="sel-search-wrap"><input type="text" placeholder="Buscar categoria..." data-sel-search="cat-sel-5" autocomplete="off"></div>
+                        <div class="sel-list" data-sel-list="cat-sel-5"></div>
+                    </div>
+                </div>
                     <label>Marca</label>
                     <select name="marca_id" id="marca_reparo" required>
                         <option value="">Selecione a marca</option>
@@ -1045,12 +1235,19 @@
                 <div class="card-title">📤 Saída do reparo</div>
                 <form method="POST" action="/saida_reparo" onsubmit="return prepararDestinoReparo()">
                     <label>Categoria</label>
-                    <select name="categoria_id" id="categoria_saida_reparo" onchange="carregarMarcas('categoria_saida_reparo','marca_saida_reparo')" required>
+                    <div class="sel-wrap" data-sel="cat-sel-6">
+                    <select name="categoria_id" id="categoria_saida_reparo" onchange="carregarMarcas('categoria_saida_reparo','marca_saida_reparo')" required data-sel-id="cat-sel-6">
                         <option value="">Selecione a categoria</option>
                         {% for categoria in categorias %}
                             <option value="{{ categoria['id'] }}">{{ categoria['nome'] }}</option>
                         {% endfor %}
                     </select>
+                    <div class="sel-trigger sel-placeholder-active" data-sel-trigger="cat-sel-6"><span class="sel-placeholder">Selecione a categoria</span></div>
+                    <div class="sel-dropdown" data-sel-dropdown="cat-sel-6">
+                        <div class="sel-search-wrap"><input type="text" placeholder="Buscar categoria..." data-sel-search="cat-sel-6" autocomplete="off"></div>
+                        <div class="sel-list" data-sel-list="cat-sel-6"></div>
+                    </div>
+                </div>
                     <label>Marca</label>
                     <select name="marca_id" id="marca_saida_reparo" required>
                         <option value="">Selecione a marca</option>
@@ -1267,14 +1464,27 @@
                 <div class="card-title">🔍 Consultar por categoria</div>
                 <form method="GET">
                     <label>Categoria</label>
-                    <select name="categoria_consulta" required>
-                        <option value="">Selecione a categoria</option>
-                        {% for categoria in categorias %}
-                            <option value="{{ categoria['id'] }}" {% if categoria_consulta == categoria['id']|string %}selected{% endif %}>
-                                {{ categoria['nome'] }}
-                            </option>
-                        {% endfor %}
-                    </select>
+                    <div class="sel-wrap" data-sel="cat-sel-7">
+                        <select name="categoria_consulta" data-sel-id="cat-sel-7" required>
+                            <option value="">Selecione a categoria</option>
+                            {% for categoria in categorias %}
+                                <option value="{{ categoria['id'] }}" {% if categoria_consulta == categoria['id']|string %}selected{% endif %}>
+                                    {{ categoria['nome'] }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        <div class="sel-trigger" data-sel-trigger="cat-sel-7">
+                            {% if categoria_consulta %}
+                                <span>{% for categoria in categorias %}{% if categoria_consulta == categoria['id']|string %}{{ categoria['nome'] }}{% endif %}{% endfor %}</span>
+                            {% else %}
+                                <span class="sel-placeholder">Selecione a categoria</span>
+                            {% endif %}
+                        </div>
+                        <div class="sel-dropdown" data-sel-dropdown="cat-sel-7">
+                            <div class="sel-search-wrap"><input type="text" placeholder="Buscar categoria..." data-sel-search="cat-sel-7" autocomplete="off"></div>
+                            <div class="sel-list" data-sel-list="cat-sel-7"></div>
+                        </div>
+                    </div>
                     <input type="hidden" name="data_inicio" value="{{ data_inicio }}">
                     <input type="hidden" name="data_fim" value="{{ data_fim }}">
                     <button type="submit" class="btn">Consultar</button>
@@ -1683,6 +1893,156 @@ function prepararDestinoReparo() {
     hidden.value = valor;
     return true;
 }
+
+/* ═══════════════════════════════════════════════════
+   SEARCHABLE SELECT — categoria com busca
+═══════════════════════════════════════════════════ */
+(function () {
+    function initSelects() {
+        document.querySelectorAll('[data-sel]').forEach(wrap => {
+            const uid      = wrap.dataset.sel;
+            const select   = wrap.querySelector(`[data-sel-id="${uid}"]`);
+            const trigger  = wrap.querySelector(`[data-sel-trigger="${uid}"]`);
+            const dropdown = wrap.querySelector(`[data-sel-dropdown="${uid}"]`);
+            const searchInput = wrap.querySelector(`[data-sel-search="${uid}"]`);
+            const list     = wrap.querySelector(`[data-sel-list="${uid}"]`);
+
+            if (!select || !trigger || !list) return;
+
+            // Build option list from the hidden <select>
+            function buildList() {
+                list.innerHTML = '';
+                Array.from(select.options).forEach(opt => {
+                    if (!opt.value) return; // skip placeholder
+                    const div = document.createElement('div');
+                    div.className = 'sel-option';
+                    div.dataset.value = opt.value;
+                    div.textContent = opt.text;
+                    if (opt.selected) div.classList.add('selected');
+                    div.addEventListener('click', () => selectOption(opt.value, opt.text));
+                    list.appendChild(div);
+                });
+            }
+
+            function selectOption(value, text) {
+                // Update native select (triggers onchange for carregarMarcas)
+                select.value = value;
+                select.dispatchEvent(new Event('change'));
+
+                // Update trigger display
+                trigger.innerHTML = text;
+                trigger.classList.add('filled');
+                trigger.classList.remove('sel-placeholder-active');
+
+                // Mark selected in list
+                list.querySelectorAll('.sel-option').forEach(d => {
+                    d.classList.toggle('selected', d.dataset.value === value);
+                });
+
+                closeDropdown();
+            }
+
+            function openDropdown() {
+                // Close any other open dropdowns first
+                document.querySelectorAll('[data-sel].open').forEach(w => {
+                    if (w !== wrap) w.classList.remove('open');
+                });
+                wrap.classList.add('open');
+                buildList();
+                searchInput.value = '';
+                filterList('');
+
+                // On mobile: fixed positioning + show backdrop
+                if (window.innerWidth <= 640) {
+                    const rect = wrap.getBoundingClientRect();
+                    const spaceBelow = window.innerHeight - rect.bottom;
+                    const spaceAbove = rect.top;
+                    if (spaceBelow < 260 && spaceAbove > spaceBelow) {
+                        dropdown.style.bottom = (window.innerHeight - rect.top + 4) + 'px';
+                        dropdown.style.top = 'auto';
+                    } else {
+                        dropdown.style.top = (rect.bottom + 4) + 'px';
+                        dropdown.style.bottom = 'auto';
+                    }
+                    const backdrop = document.getElementById('sel-backdrop');
+                    if (backdrop) {
+                        backdrop.classList.add('active');
+                        backdrop.onclick = closeDropdown;
+                    }
+                }
+
+                setTimeout(() => searchInput.focus(), 80);
+            }
+
+            function closeDropdown() {
+                wrap.classList.remove('open');
+                const backdrop = document.getElementById('sel-backdrop');
+                if (backdrop) backdrop.classList.remove('active');
+            }
+
+            function filterList(term) {
+                let hasVisible = false;
+                list.querySelectorAll('.sel-option').forEach(d => {
+                    const match = d.textContent.toLowerCase().includes(term.toLowerCase());
+                    d.classList.toggle('hidden', !match);
+                    if (match) hasVisible = true;
+                });
+                // Show/hide empty state
+                let empty = list.querySelector('.sel-empty');
+                if (!hasVisible) {
+                    if (!empty) {
+                        empty = document.createElement('div');
+                        empty.className = 'sel-empty';
+                        empty.textContent = 'Nenhuma categoria encontrada';
+                        list.appendChild(empty);
+                    }
+                    empty.style.display = 'block';
+                } else if (empty) {
+                    empty.style.display = 'none';
+                }
+            }
+
+            // Trigger click opens/closes
+            trigger.addEventListener('click', e => {
+                e.stopPropagation();
+                wrap.classList.contains('open') ? closeDropdown() : openDropdown();
+            });
+
+            // Search input filters list
+            searchInput.addEventListener('input', () => filterList(searchInput.value));
+            searchInput.addEventListener('click', e => e.stopPropagation());
+            searchInput.addEventListener('keydown', e => {
+                if (e.key === 'Escape') closeDropdown();
+                if (e.key === 'Enter') {
+                    const first = list.querySelector('.sel-option:not(.hidden)');
+                    if (first) first.click();
+                }
+            });
+
+            // If native select already has a value set (e.g. after page reload), reflect it
+            if (select.value) {
+                const opt = select.options[select.selectedIndex];
+                if (opt) {
+                    trigger.innerHTML = opt.text;
+                    trigger.classList.add('filled');
+                    trigger.classList.remove('sel-placeholder-active');
+                }
+            }
+        });
+
+        // Close on outside click
+        document.addEventListener('click', () => {
+            document.querySelectorAll('[data-sel].open').forEach(w => w.classList.remove('open'));
+        });
+    }
+
+    // Init after DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initSelects);
+    } else {
+        initSelects();
+    }
+})();
 
 /* ═══════════════════════════════════════════════════
    BUSCA NAS TABELAS
