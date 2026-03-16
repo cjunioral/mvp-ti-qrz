@@ -8,6 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 
     <style>
         :root {
@@ -1811,6 +1812,12 @@ function abrirAba(nome) {
 
     fecharMenu();
 
+    // Inicializa gráficos quando a aba dashboard fica visível
+    if (nome === 'dashboard') {
+        // requestAnimationFrame garante que o canvas já está renderizado
+        requestAnimationFrame(() => inicializarGraficos());
+    }
+
     // Scroll restaurado por aba individualmente
     const scrollKey = 'scrollY_' + nome;
     const savedScroll = sessionStorage.getItem(scrollKey);
@@ -2058,13 +2065,25 @@ function filtrarTabela(input, tableId) {
 
 /* ═══════════════════════════════════════════════════
    GRÁFICOS — Chart.js
+   Os gráficos só são inicializados quando a aba dashboard
+   fica visível, pois canvas com display:none não renderiza.
 ═══════════════════════════════════════════════════ */
-window.addEventListener('load', function () {
+let _chartsInicializados = false;
+
+function inicializarGraficos() {
+    if (_chartsInicializados) return;
+
+    const canvasCat = document.getElementById('chartCategorias');
+    const canvasReg = document.getElementById('chartRegionais');
+    if (!canvasCat || !canvasReg) return;
+
+    _chartsInicializados = true;
+
     // Dados das categorias injetados pelo Jinja2
-    const labelsCat  = [{% for item in resumo_categorias %}"{{ item['categoria'] }}",{% endfor %}];
-    const valuesCat  = [{% for item in resumo_categorias %}{{ item['total'] }},{% endfor %}];
-    const labelsReg  = [{% for item in resumo_regionais %}"{{ item['unidade'] }}",{% endfor %}];
-    const valuesReg  = [{% for item in resumo_regionais %}{{ item['total'] }},{% endfor %}];
+    const labelsCat = [{% for item in resumo_categorias %}"{{ item['categoria'] }}",{% endfor %}];
+    const valuesCat = [{% for item in resumo_categorias %}{{ item['total'] }},{% endfor %}];
+    const labelsReg = [{% for item in resumo_regionais %}"{{ item['unidade'] }}",{% endfor %}];
+    const valuesReg = [{% for item in resumo_regionais %}{{ item['total'] }},{% endfor %}];
 
     const paleta = ['#e30613','#1a1a1a','#d97706','#16a34a','#6366f1','#ec4899','#0ea5e9','#f97316','#8b5cf6','#14b8a6'];
 
@@ -2084,7 +2103,7 @@ window.addEventListener('load', function () {
     };
 
     // Barras — categorias
-    new Chart(document.getElementById('chartCategorias'), {
+    new Chart(canvasCat, {
         type: 'bar',
         data: {
             labels: labelsCat,
@@ -2106,7 +2125,7 @@ window.addEventListener('load', function () {
     });
 
     // Donut — regionais
-    new Chart(document.getElementById('chartRegionais'), {
+    new Chart(canvasReg, {
         type: 'doughnut',
         data: {
             labels: labelsReg,
@@ -2130,8 +2149,7 @@ window.addEventListener('load', function () {
             }
         }
     });
-});
-
+}
 /* ═══════════════════════════════════════════════════
    IMPRESSÃO
    imprimirSecao(titulo) — imprime a aba ativa inteira
